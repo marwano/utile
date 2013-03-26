@@ -13,6 +13,7 @@ from tempfile import mkdtemp
 from contextlib import contextmanager
 from fcntl import flock, LOCK_EX, LOCK_NB
 from datetime import timedelta
+from argparse import ArgumentParser
 
 # list of cipher aliases http://www.openssl.org/docs/apps/enc.html
 DES3, AES_128, AES_256 = 'des_ede3_cbc', 'aes_128_cbc', 'aes_256_cbc'
@@ -81,3 +82,17 @@ def shell(cmd, msg='', caller=check_call, shell=True, **kwargs):
     returncode = caller(cmd, shell=shell, **kwargs)
     print 'duration: %s' % timedelta(seconds=time.time() - start)
     return returncode
+
+
+class Arg(object):
+    def __init__(self, *args, **kwargs):
+        self.args = args
+        self.kwargs = kwargs
+
+
+def parse_args(description, *args, **kwargs):
+    kwargs['description'] = description
+    parser = ArgumentParser(**kwargs)
+    for i in args:
+        parser.add_argument(*i.args, **i.kwargs)
+    return parser.parse_args()
