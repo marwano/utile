@@ -2,6 +2,8 @@
 # Copyright (C) 2013 Marwan Alsabbagh
 # license: BSD, see LICENSE for more details.
 
+__version__ = '0.1'
+
 import time
 import re
 import os
@@ -12,8 +14,11 @@ from subprocess import check_output, check_call
 from tempfile import mkdtemp
 from contextlib import contextmanager
 from fcntl import flock, LOCK_EX, LOCK_NB
-from datetime import timedelta
+from datetime import timedelta, datetime
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
+
+# an alias for easier importing
+now = datetime.now
 
 # list of cipher aliases http://www.openssl.org/docs/apps/enc.html
 DES3, AES_128, AES_256 = 'des_ede3_cbc', 'aes_128_cbc', 'aes_256_cbc'
@@ -91,9 +96,10 @@ class Arg(object):
 
 
 def parse_args(description, *args, **kwargs):
+    from bunch import Bunch
     kwargs['description'] = description
     kwargs.setdefault('formatter_class', ArgumentDefaultsHelpFormatter)
     parser = ArgumentParser(**kwargs)
     for i in args:
         parser.add_argument(*i.args, **i.kwargs)
-    return parser.parse_args()
+    return Bunch(parser.parse_args().__dict__)
