@@ -99,8 +99,12 @@ def deb_requires(needed):
         sys.exit(1)
 
 
-def shell(cmd=None, msg=None, caller=check_call, shell=True, **kwargs):
+def shell(cmd=None, msg=None, caller=check_call, shell=True, strict=False, **kwargs):
     msg = msg if msg else cmd
+    if strict:
+        if not shell or not isinstance(cmd, basestring):
+            raise ValueError('strict can only be used when shell=True and cmd is a string')
+        cmd = 'set -e;' + cmd
     print ' {} '.format(msg).center(60, '-')
     start = time.time()
     returncode = caller(cmd, shell=shell, **kwargs)
