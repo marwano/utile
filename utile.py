@@ -2,11 +2,12 @@
 # Copyright (C) 2013 Marwan Alsabbagh
 # license: BSD, see LICENSE for more details.
 
-__version__ = '0.1.2a0'
+__version__ = '0.2a0'
 
 import time
 import re
 import os
+import sys
 import itertools
 from shutil import rmtree
 from inspect import getargspec
@@ -22,6 +23,11 @@ now = datetime.now
 
 # list of cipher aliases http://www.openssl.org/docs/apps/enc.html
 DES3, AES_128, AES_256 = 'des_ede3_cbc', 'aes_128_cbc', 'aes_256_cbc'
+
+DEB_REQUIRES_MSG = """
+The package(s) '{missing}' are currently not installed. You can install them by typing:
+sudo apt-get install {missing}
+""".strip()
 
 
 def save_args(obj, values):
@@ -78,6 +84,19 @@ def encrypt(key, data, alg=AES_256):
 
 def decrypt(key, data, alg=AES_256):
     return _crypt(data, op=0, key=key, alg=alg, iv='', key_as_bytes=1)
+
+
+def deb_packages():
+    lines = check_output(['dpkg', '--get-selections']).splitlines()
+    lines = [i.split() for i in lines]
+    return [i[0] for i in lines if i[1] == 'install']
+
+
+def deb_requires(needed):
+    missing = set(needed.split()).difference(deb_packages())
+    if missing:
+        print(DEB_REQUIRES_MSG.format(missing=' '.join(missing)))
+        sys.exit(1)
 
 
 def shell(cmd, msg='', caller=check_call, shell=True, **kwargs):
