@@ -10,6 +10,7 @@ import os
 import sys
 import itertools
 from shutil import rmtree
+from hashlib import sha256
 from inspect import getargspec
 from subprocess import check_output, check_call
 from tempfile import mkdtemp
@@ -18,16 +19,13 @@ from fcntl import flock, LOCK_EX, LOCK_NB
 from datetime import timedelta, datetime
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, RawDescriptionHelpFormatter
 
-# an alias for easier importing
-now = datetime.now
-
-# list of cipher aliases http://www.openssl.org/docs/apps/enc.html
-DES3, AES_128, AES_256 = 'des_ede3_cbc', 'aes_128_cbc', 'aes_256_cbc'
-
 DEB_REQUIRES_MSG = """
 The package(s) '{missing}' are currently not installed. You can install them by typing:
 sudo apt-get install {missing}
 """.strip()
+
+# an alias for easier importing
+now = datetime.now
 
 
 def save_args(obj, values):
@@ -71,19 +69,17 @@ def shell_quote(s):
     return "'" + s.replace("'", "'\"'\"'") + "'"
 
 
-def _crypt(data, **cipher_args):
-    from M2Crypto.EVP import Cipher
-    cipher = Cipher(**cipher_args)
-    output = cipher.update(data)
-    return output + cipher.final()
+def cipher(key):
+    from Crypto.Cipher import AES
+    return AES.new(sha256(key).digest(), AES.MODE_CBC, '\x00' * AES.block_size)
 
 
-def encrypt(key, data, alg=AES_256):
-    return _crypt(data, op=1, key=key, alg=alg, iv='', key_as_bytes=1)
+def encrypt(key, data):
+    return cipher(key).encrypt(data)
 
 
-def decrypt(key, data, alg=AES_256):
-    return _crypt(data, op=0, key=key, alg=alg, iv='', key_as_bytes=1)
+def decrypt(key, data):
+    return cipher(key).decrypt(data)
 
 
 def deb_packages():
