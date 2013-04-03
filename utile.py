@@ -16,7 +16,7 @@ from tempfile import mkdtemp
 from contextlib import contextmanager
 from fcntl import flock, LOCK_EX, LOCK_NB
 from datetime import timedelta, datetime
-from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter
+from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, RawDescriptionHelpFormatter
 
 # an alias for easier importing
 now = datetime.now
@@ -99,13 +99,19 @@ def deb_requires(needed):
         sys.exit(1)
 
 
-def shell(cmd, msg='', caller=check_call, shell=True, **kwargs):
+def shell(cmd=None, msg=None, caller=check_call, shell=True, **kwargs):
     msg = msg if msg else cmd
     print ' {} '.format(msg).center(60, '-')
     start = time.time()
     returncode = caller(cmd, shell=shell, **kwargs)
     print 'duration: %s' % timedelta(seconds=time.time() - start)
     return returncode
+
+
+class ArgDefaultRawDescrHelpFormatter(ArgumentDefaultsHelpFormatter, RawDescriptionHelpFormatter):
+    """Help message formatter which adds default values to argument help and
+    which retains any formatting in descriptions.
+    """
 
 
 class Arg(object):
@@ -117,7 +123,7 @@ class Arg(object):
 def parse_args(description, *args, **kwargs):
     from bunch import Bunch
     kwargs['description'] = description
-    kwargs.setdefault('formatter_class', ArgumentDefaultsHelpFormatter)
+    kwargs.setdefault('formatter_class', ArgDefaultRawDescrHelpFormatter)
     parser = ArgumentParser(**kwargs)
     for i in args:
         parser.add_argument(*i.args, **i.kwargs)
