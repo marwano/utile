@@ -1,14 +1,25 @@
 import os
 import re
 from setuptools import setup
+from subprocess import check_output
 
 README = open('README.rst').read()
 CHANGES = open('CHANGES.txt').read()
-VERSION = re.findall("__version__ = '(.*)'", open('utile.py').read())[0]
+
+
+def get_version():
+    version = re.findall("__version__ = '(.*)'", open('utile.py').read())[0]
+    try:
+        if 'a' in version:
+            count = check_output(['git', 'describe']).split('-')[1]
+            version += '.dev' + count
+    finally:
+        return version
+
 
 setup(
     name='utile',
-    version=VERSION,
+    version=get_version(),
     description="Collection of useful functions and classes",
     long_description=README + '\n\n' + CHANGES,
     keywords='utile',
