@@ -2,7 +2,7 @@
 # Copyright (C) 2013 Marwan Alsabbagh
 # license: BSD, see LICENSE for more details.
 
-__version__ = '0.1.2'
+__version__ = '0.1.2a0'
 
 import time
 import re
