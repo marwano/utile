@@ -1,7 +1,7 @@
-import os
 import re
 from setuptools import setup
 from subprocess import check_output
+import os.path
 
 README = open('README.rst').read()
 CHANGES = open('CHANGES.txt').read()
@@ -9,12 +9,14 @@ CHANGES = open('CHANGES.txt').read()
 
 def get_version():
     version = re.findall("__version__ = '(.*)'", open('utile.py').read())[0]
-    try:
-        if 'a' in version:
+    if 'a' in version:
+        try:
             count = check_output(['git', 'describe']).split('-')[1]
             version += '.dev' + count
-    finally:
-        return version
+            open('alpha_version.txt', 'w').write(version)
+            return version
+        except:
+            return open('alpha_version.txt').read()
 
 
 setup(
