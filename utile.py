@@ -90,7 +90,7 @@ def commands_required(commands):
         sys.exit(1)
 
 
-def shell(cmd=None, msg=None, caller=check_call, shell=True, strict=False, **kwargs):
+def shell(cmd=None, msg=None, caller=check_call, shell=True, executable='/bin/bash', strict=False, **kwargs):
     msg = msg if msg else cmd
     if strict:
         if not shell or not isinstance(cmd, basestring):
@@ -98,7 +98,7 @@ def shell(cmd=None, msg=None, caller=check_call, shell=True, strict=False, **kwa
         cmd = 'set -e;' + cmd
     print ' {} '.format(msg).center(60, '-')
     start = time.time()
-    returncode = caller(cmd, shell=shell, **kwargs)
+    returncode = caller(cmd, shell=shell, executable=executable, **kwargs)
     print 'duration: %s' % timedelta(seconds=time.time() - start)
     return returncode
 
