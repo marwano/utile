@@ -19,11 +19,6 @@ from fcntl import flock, LOCK_EX, LOCK_NB
 from datetime import timedelta, datetime
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, RawDescriptionHelpFormatter
 
-DEB_REQUIRES_MSG = """
-The package(s) '{missing}' are currently not installed. You can install them by typing:
-sudo apt-get install {missing}
-""".strip()
-
 # an alias for easier importing
 now = datetime.now
 
@@ -82,16 +77,16 @@ def decrypt(key, data):
     return cipher(key).decrypt(data)
 
 
-def deb_packages():
-    lines = check_output(['dpkg', '--get-selections']).splitlines()
-    lines = [i.split() for i in lines]
-    return [i[0] for i in lines if i[1] == 'install']
+def which(cmd):
+    from os.path import exists, join
+    paths = [join(i, cmd) for i in os.environ['PATH'].split(os.pathsep)]
+    return [i for i in paths if exists(i)]
 
 
-def deb_requires(needed):
-    missing = set(needed.split()).difference(deb_packages())
+def commands_required(commands):
+    missing = [cmd for cmd in commands.split() if not which(cmd)]
     if missing:
-        print(DEB_REQUIRES_MSG.format(missing=' '.join(missing)))
+        print("The command(s) '%s' are not installed" % ' '.join(missing))
         sys.exit(1)
 
 
