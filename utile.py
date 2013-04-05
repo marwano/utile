@@ -109,7 +109,7 @@ def commands_required(commands):
     enforce(not missing, "'%s' command(s) not found" % ' '.join(missing))
 
 
-def shell(cmd=None, msg=None, caller=check_call, shell=True, executable='/bin/bash', strict=False, **kwargs):
+def shell(cmd=None, msg=None, caller=check_call, strict=False, **kwargs):
     msg = msg if msg else cmd
     if strict:
         if not shell or not isinstance(cmd, basestring):
@@ -117,7 +117,10 @@ def shell(cmd=None, msg=None, caller=check_call, shell=True, executable='/bin/ba
         cmd = 'set -e;' + cmd
     print ' {} '.format(msg).center(60, '-')
     start = time.time()
-    returncode = caller(cmd, shell=shell, executable=executable, **kwargs)
+    kwargs.setdefault('shell', True)
+    if kwargs.get('shell'):
+        kwargs.setdefault('executable', '/bin/bash')
+    returncode = caller(cmd, **kwargs)
     print 'duration: %s' % timedelta(seconds=time.time() - start)
     return returncode
 
