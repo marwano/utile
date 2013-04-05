@@ -9,6 +9,7 @@ import re
 import os
 import sys
 import itertools
+from functools import wraps
 from shutil import rmtree
 from hashlib import sha256
 from inspect import getargspec
@@ -77,6 +78,26 @@ def decrypt(key, data):
     return cipher(key).decrypt(data)
 
 
+class EnforceError(Exception):
+    pass
+
+
+def enforce(rule, msg):
+    if not rule:
+        raise EnforceError(msg)
+
+
+def enforce_clean_exit(func):
+    @wraps(func)
+    def wrapper(*args, **kwds):
+        try:
+            return func(*args, **kwds)
+        except EnforceError as err:
+            print("ERROR: {0}".format(err))
+            sys.exit(1)
+    return wrapper
+
+
 def which(cmd):
     from os.path import exists, join
     paths = [join(i, cmd) for i in os.environ['PATH'].split(os.pathsep)]
@@ -85,9 +106,7 @@ def which(cmd):
 
 def commands_required(commands):
     missing = [cmd for cmd in commands.split() if not which(cmd)]
-    if missing:
-        print("The command(s) '%s' are not installed" % ' '.join(missing))
-        sys.exit(1)
+    enforce(not missing, "'%s' command(s) not found" % ' '.join(missing))
 
 
 def shell(cmd=None, msg=None, caller=check_call, shell=True, executable='/bin/bash', strict=False, **kwargs):
