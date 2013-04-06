@@ -2,7 +2,7 @@
 # Copyright (C) 2013 Marwan Alsabbagh
 # license: BSD, see LICENSE for more details.
 
-__version__ = '0.2a0'
+__version__ = '0.2.dev'
 
 import time
 import re
@@ -22,6 +22,21 @@ from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, RawDescripti
 
 # an alias for easier importing
 now = datetime.now
+
+
+def git_version(version):
+    if 'dev' not in version:
+        return version
+    try:
+        count = check_output(['git', 'describe']).split('-')[1]
+        with open('dev_version.txt', 'w') as f:
+            f.write(version + count)
+    except:
+        pass
+    try:
+        return open('dev_version.txt').read()
+    except:
+        return version
 
 
 def save_args(obj, values):

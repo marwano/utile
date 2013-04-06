@@ -1,29 +1,20 @@
-import re
+
 from setuptools import setup
-from subprocess import check_output
-import os.path
 
-README = open('README.rst').read()
-CHANGES = open('CHANGES.txt').read()
+readme = open('README.rst').read()
+changes = open('CHANGES.txt').read()
 
-
-def get_version():
-    version = re.findall("__version__ = '(.*)'", open('utile.py').read())[0]
-    if 'a' in version:
-        try:
-            count = check_output(['git', 'describe']).split('-')[1]
-            version += '.dev' + count
-            open('alpha_version.txt', 'w').write(version)
-            return version
-        except:
-            return open('alpha_version.txt').read()
-
+version = __import__('utile').__version__
+try:
+    version = __import__('utile').git_version(version)
+except:
+    pass
 
 setup(
     name='utile',
-    version=get_version(),
+    version=version,
     description="Collection of useful functions and classes",
-    long_description=README + '\n\n' + CHANGES,
+    long_description=readme + '\n\n' + changes,
     keywords='utile',
     author='Marwan Alsabbagh',
     author_email='marwan.alsabbagh@gmail.com',
