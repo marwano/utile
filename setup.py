@@ -1,14 +1,10 @@
 
 from setuptools import setup
+import utile
 
 readme = open('README.rst').read()
 changes = open('CHANGES.txt').read()
-
-version = __import__('utile').__version__
-try:
-    version = __import__('utile').git_version(version)
-except:
-    pass
+version = utile.git_version(utile.__version__)
 
 setup(
     name='utile',

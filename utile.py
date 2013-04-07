@@ -7,13 +7,14 @@ __version__ = '0.2.dev'
 import time
 import re
 import os
+import os.path
 import sys
 import itertools
 from functools import wraps
 from shutil import rmtree
 from hashlib import sha256
 from inspect import getargspec
-from subprocess import check_output, check_call
+from subprocess import check_output, check_call, Popen, PIPE
 from tempfile import mkdtemp
 from contextlib import contextmanager
 from fcntl import flock, LOCK_EX, LOCK_NB
@@ -25,17 +26,15 @@ now = datetime.now
 
 
 def git_version(version):
+    git = Popen(['git', 'describe'], stdout=PIPE, stderr=PIPE).communicate()[0]
     if 'dev' not in version:
         return version
-    try:
-        count = check_output(['git', 'describe']).split('-')[1]
-        with open('dev_version.txt', 'w') as f:
-            f.write(version + count)
-    except:
-        pass
-    try:
-        return open('dev_version.txt').read()
-    except:
+    elif git:
+        return version + git.split('-')[1]
+    elif os.path.exists('PKG-INFO'):
+        info = open('PKG-INFO').read()
+        return re.findall(r'^Version: (.*)$', info, re.MULTILINE)[0]
+    else:
         return version
 
 
