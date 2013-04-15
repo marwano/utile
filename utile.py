@@ -115,7 +115,7 @@ def enforce_clean_exit(func):
         try:
             return func(*args, **kwds)
         except EnforceError as err:
-            print("ERROR: {0}".format(err))
+            sys.stderr.write("ERROR: {0}\n".format(err))
             sys.exit(1)
     return wrapper
 
