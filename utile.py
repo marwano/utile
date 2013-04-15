@@ -38,9 +38,17 @@ def git_version(version):
         return version
 
 
-def save_args(obj, values):
-    for i in getargspec(obj.__init__).args[1:]:
-        setattr(obj, i, values[i])
+def save_args(f):
+    @wraps(f)
+    def wrapper(self, *args, **kwargs):
+        names = getargspec(f).args[1:]
+        defaults = zip(reversed(names), reversed(getargspec(f).defaults))
+        items = zip(names, args) + kwargs.items() + defaults
+        for k, v in items:
+            if not hasattr(self, k):
+                setattr(self, k, v)
+        return f(self, *args, **kwargs)
+    return wrapper
 
 
 def flatten(data):
