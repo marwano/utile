@@ -26,11 +26,13 @@ now = datetime.now
 
 
 def git_version(version):
-    git = Popen(['git', 'describe'], stdout=PIPE, stderr=PIPE).communicate()[0]
+    git_details = ''
+    if which('git'):
+        git_details = Popen(['git', 'describe'], stdout=PIPE, stderr=PIPE).communicate()[0]
     if 'dev' not in version:
         return version
-    elif git:
-        return version + git.split('-')[1]
+    elif git_details:
+        return version + git_details.split('-')[1]
     elif os.path.exists('PKG-INFO'):
         info = open('PKG-INFO').read()
         return re.findall(r'^Version: (.*)$', info, re.MULTILINE)[0]
