@@ -89,7 +89,7 @@ def shell_quote(s):
 
 def cipher(key):
     from Crypto.Cipher import AES
-    return AES.new(sha256(key).digest(), AES.MODE_CBC, '\x00' * AES.block_size)
+    return AES.new(sha256(key).digest(), AES.MODE_CFB, '\x00' * AES.block_size)
 
 
 def encrypt(key, data):
