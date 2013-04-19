@@ -20,9 +20,35 @@ from contextlib import contextmanager
 from fcntl import flock, LOCK_EX, LOCK_NB
 from datetime import timedelta, datetime
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, RawDescriptionHelpFormatter
+try:
+    from bunch import Bunch as bunch_or_dict
+except ImportError:
+    bunch_or_dict = dict
+try:
+    from Crypto.Cipher import AES
+except ImportError:
+    AES = None
+try:
+    from lxml import etree
+except ImportError:
+    etree = None
+
 
 # an alias for easier importing
 now = datetime.now
+
+
+def _root_to_dict(item, return_tuple=True):
+    if return_tuple:
+        return item.tag, dict(map(_root_to_dict, item)) or item.text
+    else:
+        return dict(map(_root_to_dict, item))
+
+
+def xml_to_dict(xml, *args, **kwargs):
+    enforce(etree, 'lxml is not installed.')
+    root = etree.fromstring(xml, etree.XMLParser(*args, **kwargs))
+    return _root_to_dict(root, False)
 
 
 def git_version(version):
@@ -89,17 +115,17 @@ def shell_quote(s):
     return "'" + s.replace("'", "'\"'\"'") + "'"
 
 
-def cipher(key):
-    from Crypto.Cipher import AES
+def _cipher(key):
+    enforce(AES, 'pycrypto is not installed.')
     return AES.new(sha256(key).digest(), AES.MODE_CFB, '\x00' * AES.block_size)
 
 
 def encrypt(key, data):
-    return cipher(key).encrypt(data)
+    return _cipher(key).encrypt(data)
 
 
 def decrypt(key, data):
-    return cipher(key).decrypt(data)
+    return _cipher(key).decrypt(data)
 
 
 class EnforceError(Exception):
@@ -123,9 +149,8 @@ def enforce_clean_exit(func):
 
 
 def which(cmd):
-    from os.path import exists, join
-    paths = [join(i, cmd) for i in os.environ['PATH'].split(os.pathsep)]
-    return [i for i in paths if exists(i)]
+    paths = [os.path.join(i, cmd) for i in os.environ['PATH'].split(os.pathsep)]
+    return [i for i in paths if os.path.exists(i)]
 
 
 def commands_required(commands):
@@ -162,10 +187,9 @@ class Arg(object):
 
 
 def parse_args(description, *args, **kwargs):
-    from bunch import Bunch
     kwargs['description'] = description
     kwargs.setdefault('formatter_class', ArgDefaultRawDescrHelpFormatter)
     parser = ArgumentParser(**kwargs)
     for i in args:
         parser.add_argument(*i.args, **i.kwargs)
-    return Bunch(parser.parse_args().__dict__)
+    return bunch_or_dict(parser.parse_args().__dict__)
