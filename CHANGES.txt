@@ -1,8 +1,23 @@
 Changelog
 =========
 
+0.2 (2013-04-20)
+------------------
 
+- Added xml_to_dict function that converts an XML string to a dict/bunch.
+- Added git_version function that appends git version for python packaging.
+- Changed save_args into a decorator for improved ease of use.
+- created enforce function, EnforceError exception and enforce_clean_exit
+  decorator. Has similar concept to assert statements but is intended to be
+  run at all times not just during debugging.
+- Added which function that behaves like the unix which command.
+- Added commands_required function used to enforce a required list of commands.
+- Added ArgDefaultRawDescrHelpFormatter class which combines the functionality
+  of ArgumentDefaultsHelpFormatter and RawDescriptionHelpFormatter in the
+  argparse package.
+
+ 
 0.1.2 (2013-03-29)
 ------------------
 
-* First release.
+- First release.
