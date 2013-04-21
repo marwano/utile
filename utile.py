@@ -20,19 +20,19 @@ from contextlib import contextmanager
 from fcntl import flock, LOCK_EX, LOCK_NB
 from datetime import timedelta, datetime
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, RawDescriptionHelpFormatter
-try:
-    from bunch import Bunch as bunch_or_dict
-except ImportError:
-    bunch_or_dict = dict
-try:
-    from Crypto.Cipher import AES
-except ImportError:
-    AES = None
-try:
-    from lxml import etree
-except ImportError:
-    etree = None
 
+
+def get_import(name, default=None):
+    try:
+        package, name = name.rsplit('.', 1)
+        return getattr(__import__(package, fromlist=[name]), name)
+    except ImportError:
+        return default
+
+
+etree = get_import('lxml.etree')
+AES = get_import('Crypto.Cipher.AES')
+bunch_or_dict = get_import('bunch.Bunch', dict)
 
 # an alias for easier importing
 now = datetime.now

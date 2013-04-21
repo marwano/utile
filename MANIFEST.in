@@ -2,9 +2,7 @@ include LICENSE
 include *.txt
 include *.rst
 recursive-include docs *
-recursive-include testsuite *
+recursive-include tests *
 recursive-exclude docs *.pyc
-recursive-exclude docs *.pyo
-recursive-exclude testsuite *.pyc
-recursive-exclude testsuite *.pyo
+recursive-exclude tests *.pyc
 prune docs/_build
