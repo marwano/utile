@@ -38,17 +38,18 @@ bunch_or_dict = safe_import('bunch.Bunch', dict)
 now = datetime.now
 
 
-def _root_to_dict(item, return_tuple=True):
+def element_to_dict(elem, return_tuple=False):
+    children = bunch_or_dict(element_to_dict(i, True) for i in elem)
     if return_tuple:
-        return item.tag, dict(map(_root_to_dict, item)) or item.text
+        return elem.tag, children or elem.text
     else:
-        return dict(map(_root_to_dict, item))
+        return children
 
 
 def xml_to_dict(xml, *args, **kwargs):
     enforce(etree, 'lxml is not installed.')
     root = etree.fromstring(xml, etree.XMLParser(*args, **kwargs))
-    return _root_to_dict(root, False)
+    return element_to_dict(root)
 
 
 def git_version(version):
