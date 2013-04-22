@@ -22,7 +22,7 @@ from datetime import timedelta, datetime
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, RawDescriptionHelpFormatter
 
 
-def get_import(name, default=None):
+def safe_import(name, default=None):
     try:
         package, name = name.rsplit('.', 1)
         return getattr(__import__(package, fromlist=[name]), name)
@@ -30,9 +30,9 @@ def get_import(name, default=None):
         return default
 
 
-etree = get_import('lxml.etree')
-AES = get_import('Crypto.Cipher.AES')
-bunch_or_dict = get_import('bunch.Bunch', dict)
+etree = safe_import('lxml.etree')
+AES = safe_import('Crypto.Cipher.AES')
+bunch_or_dict = safe_import('bunch.Bunch', dict)
 
 # an alias for easier importing
 now = datetime.now
@@ -128,13 +128,13 @@ def decrypt(key, data):
     return _cipher(key).decrypt(data)
 
 
-class EnforceError(Exception):
+class EnforcementError(Exception):
     pass
 
 
 def enforce(rule, msg):
     if not rule:
-        raise EnforceError(msg)
+        raise EnforcementError(msg)
 
 
 def enforce_clean_exit(func):
@@ -142,7 +142,7 @@ def enforce_clean_exit(func):
     def wrapper(*args, **kwds):
         try:
             return func(*args, **kwds)
-        except EnforceError as err:
+        except EnforcementError as err:
             sys.stderr.write("ERROR: {0}\n".format(err))
             sys.exit(1)
     return wrapper
