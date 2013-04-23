@@ -38,6 +38,12 @@ bunch_or_dict = safe_import('bunch.Bunch', dict)
 now = datetime.now
 
 
+def pretty_xml(xml):
+    enforce(etree, 'lxml is not installed.')
+    root = etree.fromstring(xml, etree.XMLParser(remove_blank_text=True))
+    return etree.tostring(root, pretty_print=True)
+
+
 def element_to_dict(elem, return_tuple=False):
     children = bunch_or_dict(element_to_dict(i, True) for i in elem)
     if return_tuple:
