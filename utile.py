@@ -38,6 +38,11 @@ bunch_or_dict = safe_import('bunch.Bunch', dict)
 now = datetime.now
 
 
+def dir_dict(obj, default=None):
+    names = [i for i in dir(obj) if not i.startswith('_')]
+    return {i:getattr(p, i, default) for i in names}
+
+
 def pretty_xml(xml):
     enforce(etree, 'lxml is not installed.')
     root = etree.fromstring(xml, etree.XMLParser(remove_blank_text=True))
