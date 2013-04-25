@@ -40,7 +40,7 @@ now = datetime.now
 
 def dir_dict(obj, default=None):
     names = [i for i in dir(obj) if not i.startswith('_')]
-    return {i:getattr(p, i, default) for i in names}
+    return {i: getattr(obj, i, default) for i in names}
 
 
 def pretty_xml(xml):
