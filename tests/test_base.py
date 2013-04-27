@@ -15,12 +15,11 @@ BYTES_ALL_BUT_NULL = ''.join(map(chr, range(1, 256)))
 class BaseTestCase(TestCase):
     @skipUnless(Crypto, 'pycrypto not installed')
     def test_crypto(self):
-        pairs = [
-            ('secret_key', 'some data'),
-            (BYTES_ALL, BYTES_ALL),
-            (u'secret_key', u'some data'),
-        ]
-        for key, expected in pairs:
+        pairs = {
+            'secret_key': 'some data',
+            BYTES_ALL: BYTES_ALL,
+        }
+        for key, expected in pairs.items():
             actual = decrypt(key, encrypt(key, expected))
             self.assertEqual(expected, actual)
 
@@ -33,3 +32,17 @@ class BaseTestCase(TestCase):
 
     def test_flatten(self):
         self.assertEqual(flatten([(0, 1), (2, 3)]), range(4))
+
+    def test_safe_import(self):
+        pairs = {
+            'os': os,
+            'os.path': os.path,
+            'os.path.exists': os.path.exists,
+            'NoSuchModule': None,
+        }
+        for name, expected in pairs.items():
+            self.assertEqual(safe_import(name), expected)
+        self.assertEqual(safe_import('NoSuchModule', 'default'), 'default')
+
+#    def test_dir_dict(self):
+        
