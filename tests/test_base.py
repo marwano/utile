@@ -1,10 +1,9 @@
 #!/usr/bin/env python
 
-import sys
 from unittest import TestCase, skipUnless
-from subprocess import check_output, CalledProcessError
-from utile import safe_import, encrypt, decrypt, shell_quote, flatten
-import re
+from subprocess import check_output
+from utile import safe_import, encrypt, decrypt, shell_quote, flatten, dir_dict
+from collections import namedtuple
 import os.path
 Crypto = safe_import('Crypto')
 
@@ -21,14 +20,14 @@ class BaseTestCase(TestCase):
         }
         for key, expected in pairs.items():
             actual = decrypt(key, encrypt(key, expected))
-            self.assertEqual(expected, actual)
+            self.assertEqual(actual, expected)
 
     @skipUnless(os.path.exists('/bin/echo'), '/bin/echo not found')
     def test_shell_quote(self):
         for expected in ['testing...', BYTES_ALL_BUT_NULL]:
             cmd = '/bin/echo -n %s' % shell_quote(expected)
             actual = check_output(cmd, shell=True)
-            self.assertEqual(expected, actual)
+            self.assertEqual(actual, expected)
 
     def test_flatten(self):
         self.assertEqual(flatten([(0, 1), (2, 3)]), range(4))
@@ -44,5 +43,9 @@ class BaseTestCase(TestCase):
             self.assertEqual(safe_import(name), expected)
         self.assertEqual(safe_import('NoSuchModule', 'default'), 'default')
 
-#    def test_dir_dict(self):
-        
+    def test_dir_dict(self):
+        Point = namedtuple('Point', 'x y')
+        p = Point(1, 2)
+        pdict = dir_dict(p)
+        self.assertEqual(pdict['x'], p.x)
+        self.assertEqual(pdict['y'], p.y)
