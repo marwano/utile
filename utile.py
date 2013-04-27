@@ -10,6 +10,7 @@ import os
 import os.path
 import sys
 import itertools
+import logging.config
 from functools import wraps
 from shutil import rmtree
 from hashlib import sha256
@@ -21,11 +22,16 @@ from fcntl import flock, LOCK_EX, LOCK_NB
 from datetime import timedelta, datetime
 from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, RawDescriptionHelpFormatter
 
+# Alias for easier importing
+now = datetime.now
+
+# Alias to the logging function which resolves a dotted name to a global object
+resolve = logging.config._resolve
+
 
 def safe_import(name, default=None):
     try:
-        package, name = name.rsplit('.', 1)
-        return getattr(__import__(package, fromlist=[name]), name)
+        return resolve(name)
     except ImportError:
         return default
 
@@ -33,9 +39,6 @@ def safe_import(name, default=None):
 etree = safe_import('lxml.etree')
 AES = safe_import('Crypto.Cipher.AES')
 bunch_or_dict = safe_import('bunch.Bunch', dict)
-
-# an alias for easier importing
-now = datetime.now
 
 
 def dir_dict(obj, default=None):
