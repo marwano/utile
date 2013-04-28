@@ -179,13 +179,13 @@ def shell(cmd=None, msg=None, caller=check_call, strict=False, **kwargs):
         if not shell or not isinstance(cmd, basestring):
             raise ValueError('strict can only be used when shell=True and cmd is a string')
         cmd = 'set -e;' + cmd
-    print ' {} '.format(msg).center(60, '-')
+    print(' {} '.format(msg).center(60, '-'))
     start = time.time()
     kwargs.setdefault('shell', True)
     if kwargs.get('shell'):
         kwargs.setdefault('executable', '/bin/bash')
     returncode = caller(cmd, **kwargs)
-    print 'duration: %s' % timedelta(seconds=time.time() - start)
+    print('duration: %s' % timedelta(seconds=time.time() - start))
     return returncode
 
 
