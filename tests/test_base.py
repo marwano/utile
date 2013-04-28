@@ -2,13 +2,20 @@
 
 from unittest import TestCase, skipUnless
 from subprocess import check_output
-from utile import safe_import, encrypt, decrypt, shell_quote, flatten, dir_dict
+from utile import (
+    safe_import, encrypt, decrypt, shell_quote, flatten, dir_dict, mac_address)
 from collections import namedtuple
 import os.path
 Crypto = safe_import('Crypto')
+mock = safe_import('mock')
 
 BYTES_ALL = ''.join(map(chr, range(256)))
 BYTES_ALL_BUT_NULL = ''.join(map(chr, range(1, 256)))
+IFCONFIG = """\
+eth0      Link encap:Ethernet  HWaddr d4:be:d9:a0:18:e1
+          inet addr:10.0.0.13  Bcast:10.0.0.255  Mask:255.255.255.0
+          inet6 addr: fe80::d6be:d9ff:fea2:f8e1/64 Scope:Link
+"""
 
 
 class BaseTestCase(TestCase):
@@ -49,3 +56,8 @@ class BaseTestCase(TestCase):
         pdict = dir_dict(p)
         self.assertEqual(pdict['x'], p.x)
         self.assertEqual(pdict['y'], p.y)
+
+    @skipUnless(mock, 'mock not installed')
+    def test_mac_address(self):
+        with mock.patch('utile.check_output', return_value=IFCONFIG):
+            self.assertEqual(mac_address(), 'd4:be:d9:a0:18:e1')

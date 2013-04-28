@@ -16,6 +16,7 @@ XML_PRETTY = """\
 """
 XML_DICT = {'body': {'h2': 'test2', 'h1': 'test1'}}
 
+
 @skipUnless(lxml, 'lxml not installed')
 @skipUnless(mock, 'mock not installed')
 class XMLTestCase(TestCase):
@@ -30,4 +31,3 @@ class XMLTestCase(TestCase):
     def test_xml_to_dict(self):
         with mock.patch('utile.bunch_or_dict', side_effect=dict):
             self.assertEqual(xml_to_dict(XML_DATA), XML_DICT)
-
