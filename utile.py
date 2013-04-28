@@ -189,6 +189,19 @@ def shell(cmd=None, msg=None, caller=check_call, strict=False, **kwargs):
     return returncode
 
 
+class TimeoutError(Exception):
+    pass
+
+
+def wait(check, delay=0.1, timeout=None):
+    start = time.time()
+    while not check():
+        duration = time.time() - start
+        if timeout and duration > timeout:
+            raise TimeoutError('waited for %0.3fs' % duration)
+        time.sleep(delay)
+
+
 class ArgDefaultRawDescrHelpFormatter(ArgumentDefaultsHelpFormatter, RawDescriptionHelpFormatter):
     """Help message formatter which adds default values to argument help and
     which retains any formatting in descriptions.
