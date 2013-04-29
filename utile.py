@@ -193,7 +193,7 @@ class TimeoutError(Exception):
     pass
 
 
-def wait(check, delay=0.1, timeout=None):
+def wait(check, timeout=None, delay=0.1):
     start = time.time()
     while not check():
         duration = time.time() - start

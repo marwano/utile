@@ -23,7 +23,7 @@ class WaitTestCase(TestCase):
         self.assertIsNone(wait(self.checker))
 
     def test_success_with_timeout(self):
-        self.assertIsNone(wait(self.checker, timeout=20))
+        self.assertIsNone(wait(self.checker, 20))
 
     def test_timed_out(self):
-        self.assertRaises(TimeoutError, wait, self.checker, timeout=5)
+        self.assertRaises(TimeoutError, wait, self.checker, 5)
