@@ -3,9 +3,11 @@
 from unittest import TestCase, skipUnless
 from subprocess import check_output
 from utile import (
-    safe_import, encrypt, decrypt, shell_quote, flatten, dir_dict, mac_address)
+    safe_import, encrypt, decrypt, shell_quote, flatten, dir_dict, mac_address,
+    process_name)
 from collections import namedtuple
 import os.path
+import sys
 Crypto = safe_import('Crypto')
 mock = safe_import('mock')
 
@@ -61,3 +63,7 @@ class BaseTestCase(TestCase):
     def test_mac_address(self):
         with mock.patch('utile.check_output', return_value=IFCONFIG):
             self.assertEqual(mac_address(), 'd4:be:d9:a0:18:e1')
+
+    def test_process_name(self):
+        self.assertTrue(set(sys.argv).issubset(process_name()))
+        self.assertEqual(process_name(1), ['/sbin/init'])

@@ -98,6 +98,12 @@ def flatten(data):
     return list(itertools.chain.from_iterable(data))
 
 
+def process_name(pid=None):
+    pid = pid or os.getpid()
+    cmdline = open('/proc/%s/cmdline' % pid).read()
+    return cmdline.strip('\x00').split('\x00')
+
+
 def mac_address(interface='eth0'):
     output = check_output(['ifconfig', interface])
     return re.search(r'HWaddr ([\w:]+)', output).group(1)
