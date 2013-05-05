@@ -2,12 +2,15 @@
 
 from unittest import TestCase, skipUnless
 from subprocess import check_output
-from utile import (
-    safe_import, encrypt, decrypt, shell_quote, flatten, dir_dict, mac_address,
-    process_name, TemporaryDirectory)
+from tempfile import NamedTemporaryFile
 from collections import namedtuple
+from os.path import exists
 import os.path
 import sys
+from utile import (
+    safe_import, encrypt, decrypt, shell_quote, flatten, dir_dict, mac_address,
+    process_name, TemporaryDirectory, file_lock, commands_required,
+    EnforcementError)
 Crypto = safe_import('Crypto')
 mock = safe_import('mock')
 
@@ -31,7 +34,7 @@ class BaseTestCase(TestCase):
             actual = decrypt(key, encrypt(key, expected))
             self.assertEqual(actual, expected)
 
-    @skipUnless(os.path.exists('/bin/echo'), '/bin/echo not found')
+    @skipUnless(exists('/bin/echo'), '/bin/echo not found')
     def test_shell_quote(self):
         for expected in ['testing...', BYTES_ALL_BUT_NULL]:
             cmd = '/bin/echo -n %s' % shell_quote(expected)
@@ -45,7 +48,7 @@ class BaseTestCase(TestCase):
         pairs = {
             'os': os,
             'os.path': os.path,
-            'os.path.exists': os.path.exists,
+            'os.path.exists': exists,
             'NoSuchModule': None,
         }
         for name, expected in pairs.items():
@@ -70,9 +73,25 @@ class BaseTestCase(TestCase):
 
     def test_temp_dir(self):
         with TemporaryDirectory() as tmp:
-            self.assertTrue(os.path.exists(tmp))
+            self.assertTrue(exists(tmp))
             file = os.path.join(tmp, 'test.txt')
             with open(file, 'w') as f:
                 f.write('test data')
             self.assertEqual(open(file).read(), 'test data')
-        self.assertFalse(os.path.exists(tmp))
+        self.assertFalse(exists(tmp))
+
+    def test_file_lock(self):
+        with NamedTemporaryFile() as f:
+            tmp = f.name
+        self.assertFalse(exists(tmp))
+        with file_lock(tmp):
+            self.assertTrue(exists(tmp))
+            with self.assertRaisesRegexp(IOError, 'Could not lock'):
+                with file_lock(tmp):
+                    pass
+        self.assertFalse(exists(tmp))
+
+    def test_commands_required(self):
+        commands_required('python')
+        with self.assertRaisesRegexp(EnforcementError, 'i_dont_exist'):
+            commands_required('i_dont_exist')

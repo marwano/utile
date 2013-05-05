@@ -124,7 +124,7 @@ def file_lock(path):
         f = open(path, 'w')
         flock(f, LOCK_EX | LOCK_NB)
     except IOError:
-        raise IOError("Could not lock '%s'" % path)
+        raise IOError('Could not lock %r' % path)
     try:
         yield
     finally:
@@ -164,8 +164,7 @@ def enforce_clean_exit(func):
         try:
             return func(*args, **kwds)
         except EnforcementError as err:
-            sys.stderr.write("ERROR: {0}\n".format(err))
-            sys.exit(1)
+            sys.exit('ERROR: %s' % err)
     return wrapper
 
 
@@ -176,7 +175,7 @@ def which(cmd):
 
 def commands_required(commands):
     missing = [cmd for cmd in commands.split() if not which(cmd)]
-    enforce(not missing, "'%s' command(s) not found" % ' '.join(missing))
+    enforce(not missing, '%r command(s) not found' % ' '.join(missing))
 
 
 def shell(cmd=None, msg=None, caller=check_call, strict=False, **kwargs):
