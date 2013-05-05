@@ -4,7 +4,7 @@ from unittest import TestCase, skipUnless
 from subprocess import check_output
 from utile import (
     safe_import, encrypt, decrypt, shell_quote, flatten, dir_dict, mac_address,
-    process_name)
+    process_name, TemporaryDirectory)
 from collections import namedtuple
 import os.path
 import sys
@@ -67,3 +67,12 @@ class BaseTestCase(TestCase):
     def test_process_name(self):
         self.assertTrue(set(sys.argv).issubset(process_name()))
         self.assertEqual(process_name(1), ['/sbin/init'])
+
+    def test_temp_dir(self):
+        with TemporaryDirectory() as tmp:
+            self.assertTrue(os.path.exists(tmp))
+            file = os.path.join(tmp, 'test.txt')
+            with open(file, 'w') as f:
+                f.write('test data')
+            self.assertEqual(open(file).read(), 'test data')
+        self.assertFalse(os.path.exists(tmp))
