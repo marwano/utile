@@ -154,9 +154,9 @@ class EnforcementError(Exception):
     pass
 
 
-def enforce(rule, msg):
+def enforce(rule, msg, exception=EnforcementError):
     if not rule:
-        raise EnforcementError(msg)
+        raise exception(msg)
 
 
 def enforce_clean_exit(func):
