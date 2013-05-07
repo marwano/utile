@@ -10,7 +10,7 @@ Mock = safe_import('mock.Mock')
 class WaitTestCase(TestCase):
     def setUp(self):
         self.patch_sleep = patch('time.sleep')
-        self.patch_time = patch('time.time', side_effect=range(100))
+        self.patch_time = patch('utile.default_timer', side_effect=range(100))
         self.patch_time.start()
         self.patch_sleep.start()
         self.checker = Mock(side_effect=[False] * 10 + [True])
