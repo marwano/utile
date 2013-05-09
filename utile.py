@@ -11,7 +11,7 @@ import os.path
 import sys
 import itertools
 import logging.config
-from timeit import default_timer
+from timeit import default_timer as timer
 from functools import wraps
 from shutil import rmtree
 from hashlib import sha256
@@ -181,17 +181,17 @@ def commands_required(commands):
 
 def shell(cmd=None, msg=None, caller=check_call, strict=False, **kwargs):
     msg = msg if msg else cmd
+    kwargs.setdefault('shell', True)
+    if kwargs['shell']:
+        kwargs.setdefault('executable', '/bin/bash')
     if strict:
-        if not shell or not isinstance(cmd, basestring):
+        if not kwargs['shell'] or not isinstance(cmd, basestring):
             raise ValueError('strict can only be used when shell=True and cmd is a string')
         cmd = 'set -e;' + cmd
     print(' {} '.format(msg).center(60, '-'))
-    start = default_timer()
-    kwargs.setdefault('shell', True)
-    if kwargs.get('shell'):
-        kwargs.setdefault('executable', '/bin/bash')
+    start = timer()
     returncode = caller(cmd, **kwargs)
-    print('duration: %s' % timedelta(seconds=default_timer() - start))
+    print('duration: %s' % timedelta(seconds=timer() - start))
     return returncode
 
 
@@ -200,9 +200,9 @@ class TimeoutError(Exception):
 
 
 def wait(check, timeout=None, delay=0.1):
-    start = default_timer()
+    start = timer()
     while not check():
-        duration = default_timer() - start
+        duration = timer() - start
         if timeout and duration > timeout:
             raise TimeoutError('waited for %0.3fs' % duration)
         time.sleep(delay)

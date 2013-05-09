@@ -7,12 +7,11 @@ from collections import namedtuple
 from os.path import exists
 import os.path
 import sys
+from support import patch, mock, Crypto
 from utile import (
     safe_import, encrypt, decrypt, shell_quote, flatten, dir_dict, mac_address,
     process_name, TemporaryDirectory, file_lock, commands_required,
     EnforcementError)
-Crypto = safe_import('Crypto')
-mock = safe_import('mock')
 
 BYTES_ALL = ''.join(map(chr, range(256)))
 BYTES_ALL_BUT_NULL = ''.join(map(chr, range(1, 256)))
@@ -64,7 +63,7 @@ class BaseTestCase(TestCase):
 
     @skipUnless(mock, 'mock not installed')
     def test_mac_address(self):
-        with mock.patch('utile.check_output', return_value=IFCONFIG):
+        with patch('utile.check_output', return_value=IFCONFIG):
             self.assertEqual(mac_address(), 'd4:be:d9:a0:18:e1')
 
     def test_process_name(self):
