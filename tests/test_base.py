@@ -4,10 +4,11 @@ from unittest import TestCase, skipUnless
 from subprocess import check_output
 from tempfile import NamedTemporaryFile
 from collections import namedtuple
+from StringIO import StringIO
 from os.path import exists
 import os.path
 import sys
-from support import patch, mock, Crypto
+from support import patch, mock, Crypto, pep8, BASE_DIR
 from utile import (
     safe_import, encrypt, decrypt, shell_quote, flatten, dir_dict, mac_address,
     process_name, TemporaryDirectory, file_lock, commands_required,
@@ -94,3 +95,12 @@ class BaseTestCase(TestCase):
         commands_required('python')
         with self.assertRaisesRegexp(EnforcementError, 'i_dont_exist'):
             commands_required('i_dont_exist')
+
+    @skipUnless(pep8, 'pep8 not installed')
+    @skipUnless(mock, 'mock not installed')
+    def test_pep8(self):
+        with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
+            style = pep8.StyleGuide(paths=[BASE_DIR])
+            errors = style.check_files().total_errors
+            msg = '%s pep8 error(s)\n%s' % (errors, mock_stdout.getvalue())
+            self.assertFalse(errors, msg)

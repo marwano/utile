@@ -21,7 +21,8 @@ from tempfile import mkdtemp
 from contextlib import contextmanager
 from fcntl import flock, LOCK_EX, LOCK_NB
 from datetime import timedelta, datetime
-from argparse import ArgumentParser, ArgumentDefaultsHelpFormatter, RawDescriptionHelpFormatter
+from argparse import (
+    ArgumentParser, ArgumentDefaultsHelpFormatter, RawDescriptionHelpFormatter)
 
 # Alias for easier importing
 now = datetime.now
@@ -70,7 +71,8 @@ def xml_to_dict(xml, *args, **kwargs):
 def git_version(version):
     git_details = ''
     if which('git'):
-        git_details = Popen(['git', 'describe'], stdout=PIPE, stderr=PIPE).communicate()[0]
+        cmd = ['git', 'describe']
+        git_details = Popen(cmd, stdout=PIPE, stderr=PIPE).communicate()[0]
     if 'dev' not in version:
         return version
     elif git_details:
@@ -170,8 +172,9 @@ def enforce_clean_exit(func):
 
 
 def which(cmd):
-    paths = [os.path.join(i, cmd) for i in os.environ['PATH'].split(os.pathsep)]
-    return [i for i in paths if os.path.exists(i)]
+    os_paths = os.environ['PATH'].split(os.pathsep)
+    cmd_paths = [os.path.join(i, cmd) for i in os_paths]
+    return [i for i in cmd_paths if os.path.exists(i)]
 
 
 def commands_required(commands):
@@ -186,7 +189,8 @@ def shell(cmd=None, msg=None, caller=check_call, strict=False, **kwargs):
         kwargs.setdefault('executable', '/bin/bash')
     if strict:
         if not kwargs['shell'] or not isinstance(cmd, basestring):
-            raise ValueError('strict can only be used when shell=True and cmd is a string')
+            msg = 'strict can only be used when shell=True and cmd is a string'
+            raise ValueError(msg)
         cmd = 'set -e;' + cmd
     print(' {} '.format(msg).center(60, '-'))
     start = timer()
@@ -208,7 +212,8 @@ def wait(check, timeout=None, delay=0.1):
         time.sleep(delay)
 
 
-class ArgDefaultRawDescrHelpFormatter(ArgumentDefaultsHelpFormatter, RawDescriptionHelpFormatter):
+class ArgDefaultRawHelpFormatter(
+        ArgumentDefaultsHelpFormatter, RawDescriptionHelpFormatter):
     """Help message formatter which adds default values to argument help and
     which retains any formatting in descriptions.
     """
@@ -222,7 +227,7 @@ class Arg(object):
 
 def parse_args(description, *args, **kwargs):
     kwargs['description'] = description
-    kwargs.setdefault('formatter_class', ArgDefaultRawDescrHelpFormatter)
+    kwargs.setdefault('formatter_class', ArgDefaultRawHelpFormatter)
     parser = ArgumentParser(**kwargs)
     for i in args:
         parser.add_argument(*i.args, **i.kwargs)
