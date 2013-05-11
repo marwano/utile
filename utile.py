@@ -101,6 +101,12 @@ def flatten(data):
     return list(itertools.chain.from_iterable(data))
 
 
+def multi_replace(val, replacements):
+    for old, new in replacements:
+        val = val.replace(old, new)
+    return val
+
+
 def process_name(pid=None):
     pid = pid or os.getpid()
     cmdline = open('/proc/%s/cmdline' % pid).read()
