@@ -12,7 +12,7 @@ from support import patch, mock, Crypto, pep8, BASE_DIR
 from utile import (
     safe_import, encrypt, decrypt, shell_quote, flatten, dir_dict, mac_address,
     process_name, TemporaryDirectory, file_lock, commands_required,
-    EnforcementError, multi_replace)
+    EnforcementError)
 
 BYTES_ALL = ''.join(map(chr, range(256)))
 BYTES_ALL_BUT_NULL = ''.join(map(chr, range(1, 256)))
@@ -104,7 +104,3 @@ class BaseTestCase(TestCase):
             errors = style.check_files().total_errors
             msg = '%s pep8 error(s)\n%s' % (errors, mock_stdout.getvalue())
             self.assertFalse(errors, msg)
-
-    def test_multi_replace(self):
-        replacements = [('hi', 'hello'), ('jack', 'jane')]
-        self.assertEqual(multi_replace('hi jack', replacements), 'hello jane')
