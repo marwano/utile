@@ -6,12 +6,13 @@ from tempfile import NamedTemporaryFile
 from collections import namedtuple
 from StringIO import StringIO
 from os.path import exists
+import datetime
 import os.path
 import sys
 from support import patch, mock, Crypto, pep8, BASE_DIR
 from utile import (
     safe_import, encrypt, decrypt, shell_quote, flatten, dir_dict, mac_address,
-    process_name, TemporaryDirectory, file_lock, commands_required,
+    process_name, TemporaryDirectory, file_lock, commands_required, resolve,
     EnforcementError)
 
 BYTES_ALL = ''.join(map(chr, range(256)))
@@ -43,6 +44,15 @@ class BaseTestCase(TestCase):
 
     def test_flatten(self):
         self.assertEqual(flatten([(0, 1), (2, 3)]), range(4))
+
+    def test_resolve(self):
+        pairs = {
+            'datetime': datetime,
+            'datetime.datetime': datetime.datetime,
+            'datetime.datetime.now': datetime.datetime.now,
+        }
+        for name, expected in pairs.items():
+            self.assertEqual(resolve(name), expected)
 
     def test_safe_import(self):
         pairs = {

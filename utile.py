@@ -21,14 +21,22 @@ from tempfile import mkdtemp
 from contextlib import contextmanager
 from fcntl import flock, LOCK_EX, LOCK_NB
 from datetime import timedelta, datetime
+from importlib import import_module
 from argparse import (
     ArgumentParser, ArgumentDefaultsHelpFormatter, RawDescriptionHelpFormatter)
 
 # Alias for easier importing
 now = datetime.now
 
-# Alias to the logging function which resolves a dotted name to a global object
-resolve = logging.config._resolve
+
+def resolve(name):
+    item, names = None, name.split('.')
+    for i, subname in enumerate(names):
+        try:
+            item = getattr(item, subname)
+        except AttributeError:
+            item = import_module('.'.join(names[:i + 1]))
+    return item
 
 
 def safe_import(name, default=None):
