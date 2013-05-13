@@ -77,13 +77,13 @@ def xml_to_dict(xml, *args, **kwargs):
 
 
 def git_version(version):
+    if 'dev' not in version:
+        return version
     git_details = ''
     if which('git'):
         cmd = ['git', 'describe']
         git_details = Popen(cmd, stdout=PIPE, stderr=PIPE).communicate()[0]
-    if 'dev' not in version:
-        return version
-    elif git_details:
+    if git_details:
         return version + git_details.split('-')[1]
     elif os.path.exists('PKG-INFO'):
         info = open('PKG-INFO').read()
