@@ -5,7 +5,7 @@ from utile import enforce, EnforcementError, enforce_clean_exit
 
 
 @enforce_clean_exit
-def clean_exit_test(x):
+def demo_clean_exit(x):
     enforce(x < 0, 'x must be negative')
 
 
@@ -26,4 +26,4 @@ class EnforceTestCase(TestCase):
 
     def test_enforce_clean_exit(self):
         with self.assertRaisesRegexp(SystemExit, 'x must be negative'):
-            clean_exit_test(self.x)
+            demo_clean_exit(self.x)
