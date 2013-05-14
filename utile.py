@@ -32,10 +32,10 @@ now = datetime.now
 def resolve(name):
     item, module = None, []
     for i in name.split('.'):
+        module.append(i)
         try:
             item = getattr(item, i)
         except AttributeError:
-            module.append(i)
             item = import_module('.'.join(module))
     return item
 
