@@ -30,12 +30,13 @@ now = datetime.now
 
 
 def resolve(name):
-    item, names = None, name.split('.')
-    for i, subname in enumerate(names):
+    item, module = None, []
+    for i in name.split('.'):
         try:
-            item = getattr(item, subname)
+            item = getattr(item, i)
         except AttributeError:
-            item = import_module('.'.join(names[:i + 1]))
+            module.append(i)
+            item = import_module('.'.join(module))
     return item
 
 

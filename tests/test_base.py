@@ -53,6 +53,8 @@ class BaseTestCase(TestCase):
         }
         for name, expected in pairs.items():
             self.assertEqual(resolve(name), expected)
+        self.assertRaises(ImportError, resolve, 'non_existent_module')
+        self.assertRaises(ImportError, resolve, 'sys.non_existent_attribute')
 
     def test_safe_import(self):
         pairs = {
