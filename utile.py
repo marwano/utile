@@ -2,7 +2,7 @@
 # Copyright (C) 2013 Marwan Alsabbagh
 # license: BSD, see LICENSE for more details.
 
-__version__ = '0.3.dev'
+__version__ = '0.3'
 
 import time
 import re
@@ -10,7 +10,6 @@ import os
 import os.path
 import sys
 import itertools
-import logging.config
 from timeit import default_timer as timer
 from functools import wraps
 from shutil import rmtree
