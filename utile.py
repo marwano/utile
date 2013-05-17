@@ -233,10 +233,15 @@ class Arg(object):
         self.kwargs = kwargs
 
 
-def parse_args(description, *args, **kwargs):
-    kwargs['description'] = description
-    kwargs.setdefault('formatter_class', ArgDefaultRawHelpFormatter)
-    parser = ArgumentParser(**kwargs)
-    for i in args:
-        parser.add_argument(*i.args, **i.kwargs)
-    return bunch_or_dict(parser.parse_args().__dict__)
+class ParseArgs(object):
+    def __init__(self, description, *args, **kwargs):
+        kwargs['description'] = description
+        kwargs.setdefault('formatter_class', ArgDefaultRawHelpFormatter)
+        self.parser = ArgumentParser(**kwargs)
+        for i in args:
+            self.parser.add_argument(*i.args, **i.kwargs)
+
+    def parse(self, args=None):
+        data = bunch_or_dict()
+        self.parser.parse_args(args, data)
+        return data
