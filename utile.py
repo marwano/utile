@@ -24,9 +24,6 @@ from importlib import import_module
 from argparse import (
     ArgumentParser, ArgumentDefaultsHelpFormatter, RawDescriptionHelpFormatter)
 
-# Alias for easier importing
-now = datetime.now
-
 
 def resolve(name):
     item, module = None, []
@@ -46,18 +43,23 @@ def safe_import(name, default=None):
         return default
 
 
-etree = safe_import('lxml.etree')
-AES = safe_import('Crypto.Cipher.AES')
-bunch_or_dict = safe_import('bunch.Bunch', dict)
-
-
 def dir_dict(obj, default=None):
     names = [i for i in dir(obj) if not i.startswith('_')]
-    return {i: getattr(obj, i, default) for i in names}
+    return bunch_or_dict({i: getattr(obj, i, default) for i in names})
+
+
+def need_module(name, package=None):
+    package = package or name.split('.')[0]
+    msg = (
+        'Could not import %r. You can install it by typing:\n'
+        'pip install %s'
+    ) % (name, package)
+    enforce(safe_import(name), msg)
+    return safe_import(name)
 
 
 def pretty_xml(xml):
-    enforce(etree, 'lxml is not installed.')
+    etree = need_module('lxml.etree')
     root = etree.fromstring(xml, etree.XMLParser(remove_blank_text=True))
     return etree.tostring(root, pretty_print=True)
 
@@ -71,7 +73,7 @@ def element_to_dict(elem, return_tuple=False):
 
 
 def xml_to_dict(xml, *args, **kwargs):
-    enforce(etree, 'lxml is not installed.')
+    etree = need_module('lxml.etree')
     root = etree.fromstring(xml, etree.XMLParser(*args, **kwargs))
     return element_to_dict(root)
 
@@ -148,7 +150,7 @@ def shell_quote(s):
 
 
 def _cipher(key):
-    enforce(AES, 'pycrypto is not installed.')
+    AES = need_module('Crypto.Cipher.AES', 'pycrypto')
     return AES.new(sha256(key).digest(), AES.MODE_CFB, '\x00' * AES.block_size)
 
 
@@ -242,6 +244,7 @@ class ParseArgs(object):
             self.parser.add_argument(*i.args, **i.kwargs)
 
     def parse(self, args=None):
-        data = bunch_or_dict()
-        self.parser.parse_args(args, data)
-        return data
+        return dir_dict(self.parser.parse_args(args))
+
+
+bunch_or_dict = safe_import('bunch.Bunch', dict)
