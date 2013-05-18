@@ -3,7 +3,6 @@
 from unittest import TestCase, skipUnless
 from subprocess import check_output
 from tempfile import NamedTemporaryFile
-from collections import namedtuple
 from StringIO import StringIO
 from os.path import exists
 import datetime
@@ -68,11 +67,15 @@ class BaseTestCase(TestCase):
         self.assertEqual(safe_import('NoSuchModule', 'default'), 'default')
 
     def test_dir_dict(self):
-        Point = namedtuple('Point', 'x y')
-        p = Point(1, 2)
-        pdict = dir_dict(p)
-        self.assertEqual(pdict['x'], p.x)
-        self.assertEqual(pdict['y'], p.y)
+        class Demo(object):
+            name = 'some random name'
+            _private = 'something private'
+
+        data = dir_dict(Demo())
+        self.assertEqual(data['name'], 'some random name')
+        self.assertFalse('_private' in data)
+        data = dir_dict(Demo(), only_public=False)
+        self.assertTrue('_private' in data)
 
     @skipUnless(mock, 'mock not installed')
     def test_mac_address(self):

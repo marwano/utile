@@ -43,8 +43,10 @@ def safe_import(name, default=None):
         return default
 
 
-def dir_dict(obj, default=None):
-    names = [i for i in dir(obj) if not i.startswith('_')]
+def dir_dict(obj, default=None, only_public=True):
+    names = dir(obj)
+    if only_public:
+        names = [i for i in names if not i.startswith('_')]
     return bunch_or_dict({i: getattr(obj, i, default) for i in names})
 
 
