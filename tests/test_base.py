@@ -67,14 +67,14 @@ class BaseTestCase(TestCase):
         self.assertEqual(safe_import('NoSuchModule', 'default'), 'default')
 
     def test_dir_dict(self):
-        class Demo(object):
-            name = 'some random name'
+        class Dummy(object):
+            description = 'this is a dummy'
             _private = 'something private'
 
-        data = dir_dict(Demo())
-        self.assertEqual(data['name'], 'some random name')
+        data = dir_dict(Dummy())
+        self.assertEqual(data['description'], 'this is a dummy')
         self.assertFalse('_private' in data)
-        data = dir_dict(Demo(), only_public=False)
+        data = dir_dict(Dummy(), only_public=False)
         self.assertTrue('_private' in data)
 
     @skipUnless(mock, 'mock not installed')

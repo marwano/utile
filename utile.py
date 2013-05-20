@@ -2,8 +2,7 @@
 # Copyright (C) 2013 Marwan Alsabbagh
 # license: BSD, see LICENSE for more details.
 
-__version__ = '0.4.dev'
-
+from __future__ import print_function
 import time
 import re
 import os
@@ -25,6 +24,9 @@ from argparse import (
     ArgumentParser, ArgumentDefaultsHelpFormatter, RawDescriptionHelpFormatter)
 
 
+__version__ = '0.4.dev'
+
+
 def resolve(name):
     item, module = None, []
     for i in name.split('.'):
@@ -41,6 +43,11 @@ def safe_import(name, default=None):
         return resolve(name)
     except ImportError:
         return default
+
+
+def force_print(*args, **kwargs):
+    kwargs['file'] = sys.__stdout__
+    print(*args, **kwargs)
 
 
 def dir_dict(obj, default=None, only_public=True):
