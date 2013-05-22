@@ -5,14 +5,15 @@ from subprocess import check_output
 from tempfile import NamedTemporaryFile
 from StringIO import StringIO
 from os.path import exists
+from textwrap import dedent
 import datetime
 import os.path
 import sys
-from support import patch, mock, Crypto, pep8, BASE_DIR
+from support import patch, mock, Crypto, pep8, docutils, BASE_DIR
 from utile import (
     safe_import, encrypt, decrypt, shell_quote, flatten, dir_dict, mac_address,
     process_name, TemporaryDirectory, file_lock, commands_required, resolve,
-    EnforcementError)
+    EnforcementError, parse_table)
 
 BYTES_ALL = ''.join(map(chr, range(256)))
 BYTES_ALL_BUT_NULL = ''.join(map(chr, range(1, 256)))
@@ -119,3 +120,23 @@ class BaseTestCase(TestCase):
             errors = style.check_files().total_errors
             msg = '%s pep8 error(s)\n%s' % (errors, mock_stdout.getvalue())
             self.assertFalse(errors, msg)
+
+    @skipUnless(docutils, 'docutils not installed')
+    def test_parse_table(self):
+        input = dedent("""
+            ==========  ==========  ================
+            color       hex         rgb
+            ==========  ==========  ================
+            red 	    #FF0000     rgb(255,0,0)
+            green       #00FF00     rgb(0,255,0)
+            blue        #0000FF     rgb(0,0,255)
+            yellow      #FFFF00     rgb(255,255,0)
+            ==========  ==========  ================
+        """)
+        output = [
+            {'color': 'red', 'hex': '#FF0000', 'rgb': 'rgb(255,0,0)'},
+            {'color': 'green', 'hex': '#00FF00', 'rgb': 'rgb(0,255,0)'},
+            {'color': 'blue', 'hex': '#0000FF', 'rgb': 'rgb(0,0,255)'},
+            {'color': 'yellow', 'hex': '#FFFF00', 'rgb': 'rgb(255,255,0)'},
+        ]
+        self.assertEqual(parse_table(input), output)

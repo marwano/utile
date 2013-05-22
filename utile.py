@@ -19,6 +19,7 @@ from tempfile import mkdtemp
 from contextlib import contextmanager
 from fcntl import flock, LOCK_EX, LOCK_NB
 from datetime import timedelta, datetime
+from xml.etree import ElementTree
 from importlib import import_module
 from argparse import (
     ArgumentParser, ArgumentDefaultsHelpFormatter, RawDescriptionHelpFormatter)
@@ -85,6 +86,17 @@ def xml_to_dict(xml, *args, **kwargs):
     etree = need_module('lxml.etree')
     root = etree.fromstring(xml, etree.XMLParser(*args, **kwargs))
     return element_to_dict(root)
+
+
+def parse_table(text):
+    publish_string = need_module('docutils.core.publish_string')
+    data = []
+    root = ElementTree.fromstring(publish_string(text, writer_name='xml'))
+    columns = [i.text for i in root.findall('.//thead//paragraph')]
+    for row in root.findall('.//tbody//row'):
+        values = [i.text for i in row.findall('.//paragraph')]
+        data.append(bunch_or_dict(zip(columns, values)))
+    return data
 
 
 def git_version(version):
