@@ -13,7 +13,7 @@ from support import patch, mock, Crypto, pep8, docutils, BASE_DIR
 from utile import (
     safe_import, encrypt, decrypt, shell_quote, flatten, dir_dict, mac_address,
     process_name, TemporaryDirectory, file_lock, commands_required, resolve,
-    EnforcementError, parse_table)
+    EnforcementError, parse_table, force_print)
 
 BYTES_ALL = ''.join(map(chr, range(256)))
 BYTES_ALL_BUT_NULL = ''.join(map(chr, range(1, 256)))

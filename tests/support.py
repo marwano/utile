@@ -1,8 +1,8 @@
 
 from utile import safe_import
-from os.path import dirname
+from os.path import dirname, abspath
 
-TEST_DIR = dirname(__file__)
+TEST_DIR = dirname(abspath(__file__))
 BASE_DIR = dirname(TEST_DIR)
 
 
