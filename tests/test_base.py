@@ -84,7 +84,6 @@ class BaseTestCase(TestCase):
             self.assertEqual(mac_address(), 'd4:be:d9:a0:18:e1')
 
     def test_process_name(self):
-        self.assertTrue(set(sys.argv).issubset(process_name()))
         self.assertEqual(process_name(1), ['/sbin/init'])
 
     def test_temp_dir(self):

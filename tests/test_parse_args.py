@@ -48,5 +48,5 @@ class ParseArgsTestCase(TestCase):
     def test_help(self):
         output = StringIO()
         self.get_parser().parser.print_help(file=output)
-        cleanup = re.sub('usage: [^\s]*', 'usage: ', output.getvalue())
+        cleanup = re.sub(r'usage:[^\[]*\[', 'usage:  [', output.getvalue())
         self.assertEqual(normalize(cleanup), normalize(HELP))
