@@ -234,9 +234,12 @@ class TimeoutError(Exception):
     pass
 
 
-def wait(check, timeout=None, delay=0.1):
+def wait(timeout=None, delay=0.1, callable=None, *args, **kwargs):
     start = timer()
-    while not check():
+    while True:
+        result = callable(*args, **kwargs)
+        if result:
+            return result
         duration = timer() - start
         if timeout and duration > timeout:
             raise TimeoutError('waited for %0.3fs' % duration)
