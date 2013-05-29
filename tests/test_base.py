@@ -1,22 +1,24 @@
 #!/usr/bin/env python
 
-from unittest import TestCase, skipUnless
+from unittest import skipUnless
 from subprocess import check_output
 from tempfile import NamedTemporaryFile
-from StringIO import StringIO
 from os.path import exists
 from textwrap import dedent
+from glob import glob
 import datetime
 import os.path
 import sys
-from support import patch, mock, Crypto, pep8, docutils, BASE_DIR
+from support import (
+    BASE_DIR, patch, mock, Crypto, pep8, docutils, StringIO, TestCase,
+    int_to_byte
+)
 from utile import (
     safe_import, encrypt, decrypt, shell_quote, flatten, dir_dict, mac_address,
     process_name, TemporaryDirectory, file_lock, commands_required, resolve,
-    EnforcementError, parse_table, force_print)
+    EnforcementError, parse_table, force_print
+)
 
-BYTES_ALL = ''.join(map(chr, range(256)))
-BYTES_ALL_BUT_NULL = ''.join(map(chr, range(1, 256)))
 IFCONFIG = """\
 eth0      Link encap:Ethernet  HWaddr d4:be:d9:a0:18:e1
           inet addr:10.0.0.13  Bcast:10.0.0.255  Mask:255.255.255.0
@@ -27,8 +29,10 @@ eth0      Link encap:Ethernet  HWaddr d4:be:d9:a0:18:e1
 class BaseTestCase(TestCase):
     @skipUnless(Crypto, 'pycrypto not installed')
     def test_crypto(self):
+        BYTES_ALL = b''.join(map(int_to_byte, range(256)))
+
         pairs = {
-            'secret_key': 'some data',
+            b'secret_key': b'some data',
             BYTES_ALL: BYTES_ALL,
         }
         for key, expected in pairs.items():
@@ -37,13 +41,14 @@ class BaseTestCase(TestCase):
 
     @skipUnless(exists('/bin/echo'), '/bin/echo not found')
     def test_shell_quote(self):
-        for expected in ['testing...', BYTES_ALL_BUT_NULL]:
-            cmd = '/bin/echo -n %s' % shell_quote(expected)
-            actual = check_output(cmd, shell=True)
-            self.assertEqual(actual, expected)
+        full_ascii = ''.join(map(chr, range(1, 128)))
+        for input in ['testing...', full_ascii]:
+            cmd = '/bin/echo -n %s' % shell_quote(input)
+            output = check_output(cmd, shell=True)
+            self.assertEqual(input, output.decode('utf8'))
 
     def test_flatten(self):
-        self.assertEqual(flatten([(0, 1), (2, 3)]), range(4))
+        self.assertEqual(flatten([(0, 1), (2, 3)]), [0, 1, 2, 3])
 
     def test_resolve(self):
         pairs = {
@@ -90,9 +95,12 @@ class BaseTestCase(TestCase):
         with TemporaryDirectory() as tmp:
             self.assertTrue(exists(tmp))
             file = os.path.join(tmp, 'test.txt')
+            input = 'test data'
             with open(file, 'w') as f:
-                f.write('test data')
-            self.assertEqual(open(file).read(), 'test data')
+                f.write(input)
+            with open(file) as f:
+                output = f.read()
+            self.assertEqual(input, output)
         self.assertFalse(exists(tmp))
 
     def test_file_lock(self):
@@ -101,14 +109,14 @@ class BaseTestCase(TestCase):
         self.assertFalse(exists(tmp))
         with file_lock(tmp):
             self.assertTrue(exists(tmp))
-            with self.assertRaisesRegexp(IOError, 'Could not lock'):
+            with self.assertRaisesRegex(IOError, 'Could not lock'):
                 with file_lock(tmp):
                     pass
         self.assertFalse(exists(tmp))
 
     def test_commands_required(self):
         commands_required('python')
-        with self.assertRaisesRegexp(EnforcementError, 'i_dont_exist'):
+        with self.assertRaisesRegex(EnforcementError, 'i_dont_exist'):
             commands_required('i_dont_exist')
 
     @skipUnless(pep8, 'pep8 not installed')

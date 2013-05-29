@@ -8,7 +8,7 @@ import re
 import os
 import os.path
 import sys
-import itertools
+from itertools import chain
 from timeit import default_timer as timer
 from functools import wraps
 from shutil import rmtree
@@ -22,10 +22,13 @@ from datetime import timedelta, datetime
 from xml.etree import ElementTree
 from importlib import import_module
 from argparse import (
-    ArgumentParser, ArgumentDefaultsHelpFormatter, RawDescriptionHelpFormatter)
+    ArgumentParser, ArgumentDefaultsHelpFormatter, RawDescriptionHelpFormatter
+)
 
 
 __version__ = '0.4.dev'
+PY3 = sys.version_info[0] == 3
+string_types = str if PY3 else basestring
 
 
 def resolve(name):
@@ -71,7 +74,7 @@ def need_module(name, package=None):
 def pretty_xml(xml):
     etree = need_module('lxml.etree')
     root = etree.fromstring(xml, etree.XMLParser(remove_blank_text=True))
-    return etree.tostring(root, pretty_print=True)
+    return etree.tostring(root, pretty_print=True, encoding='unicode')
 
 
 def element_to_dict(elem, return_tuple=False):
@@ -120,7 +123,7 @@ def save_args(f):
     def wrapper(self, *args, **kwargs):
         names = getargspec(f).args[1:]
         defaults = zip(reversed(names), reversed(getargspec(f).defaults))
-        items = zip(names, args) + kwargs.items() + defaults
+        items = chain(zip(names, args), kwargs.items(), defaults)
         for k, v in items:
             if not hasattr(self, k):
                 setattr(self, k, v)
@@ -129,13 +132,13 @@ def save_args(f):
 
 
 def flatten(data):
-    return list(itertools.chain.from_iterable(data))
+    return list(chain.from_iterable(data))
 
 
 def process_name(pid=None):
     pid = pid or os.getpid()
-    cmdline = open('/proc/%s/cmdline' % pid).read()
-    return cmdline.strip('\x00').split('\x00')
+    with open('/proc/%s/cmdline' % pid) as f:
+        return f.read().strip('\x00').split('\x00')
 
 
 def mac_address(interface='eth0'):
@@ -158,6 +161,7 @@ def file_lock(path):
         f = open(path, 'w')
         flock(f, LOCK_EX | LOCK_NB)
     except IOError:
+        f.close()
         raise IOError('Could not lock %r' % path)
     try:
         yield
@@ -219,7 +223,7 @@ def shell(cmd=None, msg=None, caller=check_call, strict=False, **kwargs):
     if kwargs['shell']:
         kwargs.setdefault('executable', '/bin/bash')
     if strict:
-        if not kwargs['shell'] or not isinstance(cmd, basestring):
+        if not kwargs['shell'] or not isinstance(cmd, string_types):
             msg = 'strict can only be used when shell=True and cmd is a string'
             raise ValueError(msg)
         cmd = 'set -e;' + cmd

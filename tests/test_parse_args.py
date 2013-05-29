@@ -2,7 +2,8 @@
 
 from unittest import TestCase
 from utile import Arg, ParseArgs
-from StringIO import StringIO
+from support import StringIO
+
 import re
 
 EPILOG = """\

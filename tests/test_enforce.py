@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from unittest import TestCase
+from support import TestCase
 from utile import enforce, EnforcementError, enforce_clean_exit
 
 
@@ -17,13 +17,13 @@ class EnforceTestCase(TestCase):
         enforce(self.x > 0, 'x must be positive')
 
     def test_enforce_false(self):
-        with self.assertRaisesRegexp(EnforcementError, 'x must be negative'):
+        with self.assertRaisesRegex(EnforcementError, 'x must be negative'):
             enforce(self.x < 0, 'x must be negative')
 
     def test_enforce_custom_exception(self):
-        with self.assertRaisesRegexp(ValueError, 'x must be negative'):
+        with self.assertRaisesRegex(ValueError, 'x must be negative'):
             enforce(self.x < 0, 'x must be negative', ValueError)
 
     def test_enforce_clean_exit(self):
-        with self.assertRaisesRegexp(SystemExit, 'x must be negative'):
+        with self.assertRaisesRegex(SystemExit, 'x must be negative'):
             demo_clean_exit(self.x)

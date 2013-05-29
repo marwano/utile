@@ -22,8 +22,7 @@ class XMLTestCase(TestCase):
         self.assertEqual(pretty_xml(XML_DATA), XML_PRETTY)
 
     def test_element_to_dict(self):
-        actual = element_to_dict(etree.XML(XML_DATA))
-        self.assertEqual(actual, XML_DICT)
+        self.assertEqual(element_to_dict(etree.XML(XML_DATA)), XML_DICT)
 
     def test_xml_to_dict(self):
         self.assertEqual(xml_to_dict(XML_DATA), XML_DICT)

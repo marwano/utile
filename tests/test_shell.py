@@ -6,8 +6,7 @@ from unittest import TestCase, skipUnless
 from tempfile import NamedTemporaryFile
 from utile import shell
 from subprocess import CalledProcessError
-from StringIO import StringIO
-from support import patch, mock
+from support import patch, mock, StringIO, read_file
 
 
 @skipUnless(mock, 'mock not installed')
@@ -30,11 +29,11 @@ class ShellTestCase(TestCase):
 
     def test_basic(self, mock_stdout):
         self.assertEqual(shell(self.hello), 0)
-        self.assertEqual(open(self.tmp).read(), 'hello\n')
+        self.assertEqual(read_file(self.tmp), 'hello\n')
 
     def test_many_commands_without_strict(self, mock_stdout):
         self.assertEqual(shell(self.many), 0)
-        self.assertIn('hello\n', open(self.tmp).read())
+        self.assertIn('hello\n', read_file(self.tmp))
 
     def test_many_commands_with_strict(self, mock_stdout):
         with self.assertRaises(CalledProcessError):
