@@ -21,6 +21,7 @@ from fcntl import flock, LOCK_EX, LOCK_NB
 from datetime import timedelta, datetime
 from xml.etree import ElementTree
 from importlib import import_module
+from textwrap import dedent
 from argparse import (
     ArgumentParser, ArgumentDefaultsHelpFormatter, RawDescriptionHelpFormatter
 )
@@ -91,15 +92,23 @@ def xml_to_dict(xml, *args, **kwargs):
     return element_to_dict(root)
 
 
+def slices_by_len(items):
+    return [(sum(items[0:k]), sum(items[0:k+1])) for k, v in enumerate(items)]
+
+
+def slice(data, slices):
+    return [data[start:end] for start, end in slices]
+
+
 def parse_table(text):
-    publish_string = need_module('docutils.core.publish_string')
-    data = []
-    root = ElementTree.fromstring(publish_string(text, writer_name='xml'))
-    columns = [i.text for i in root.findall('.//thead//paragraph')]
-    for row in root.findall('.//tbody//row'):
-        values = [i.text for i in row.findall('.//paragraph')]
-        data.append(bunch_or_dict(zip(columns, values)))
-    return data
+    lines = dedent(text).strip().splitlines()
+    slices = slices_by_len([len(i) for i in re.findall('=+ *', lines[0])])
+    keys = [i.strip() for i in slice(lines[1], slices)]
+    rows = []
+    for line in lines[3:-1]:
+        values = [i.strip() for i in slice(line, slices)]
+        rows.append(bunch_or_dict(zip(keys, values)))
+    return rows
 
 
 def git_version(version):

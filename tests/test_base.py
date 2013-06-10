@@ -4,14 +4,12 @@ from unittest import skipUnless
 from subprocess import check_output
 from tempfile import NamedTemporaryFile
 from os.path import exists
-from textwrap import dedent
 from glob import glob
 import datetime
 import os.path
 import sys
 from support import (
-    BASE_DIR, patch, mock, Crypto, pep8, docutils, StringIO, TestCase,
-    int_to_byte
+    BASE_DIR, patch, mock, Crypto, pep8, StringIO, TestCase, int_to_byte
 )
 from utile import (
     safe_import, encrypt, decrypt, shell_quote, flatten, dir_dict, mac_address,
@@ -128,18 +126,17 @@ class BaseTestCase(TestCase):
             msg = '%s pep8 error(s)\n%s' % (errors, mock_stdout.getvalue())
             self.assertFalse(errors, msg)
 
-    @skipUnless(docutils, 'docutils not installed')
     def test_parse_table(self):
-        input = dedent("""
+        input = """
             ==========  ==========  ================
             color       hex         rgb
             ==========  ==========  ================
-            red 	    #FF0000     rgb(255,0,0)
+            red         #FF0000     rgb(255,0,0)
             green       #00FF00     rgb(0,255,0)
             blue        #0000FF     rgb(0,0,255)
             yellow      #FFFF00     rgb(255,255,0)
             ==========  ==========  ================
-        """)
+        """
         output = [
             {'color': 'red', 'hex': '#FF0000', 'rgb': 'rgb(255,0,0)'},
             {'color': 'green', 'hex': '#00FF00', 'rgb': 'rgb(0,255,0)'},

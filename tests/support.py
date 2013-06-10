@@ -32,7 +32,6 @@ mock = safe_import('mock')
 etree = safe_import('lxml.etree')
 pep8 = safe_import('pep8')
 Crypto = safe_import('Crypto')
-docutils = safe_import('docutils')
 
 # load correct StringIO for python 2 and 3
 StringIO = safe_import('StringIO.StringIO') or safe_import('io.StringIO')
