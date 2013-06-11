@@ -13,7 +13,7 @@ from support import (
 )
 from utile import (
     safe_import, encrypt, decrypt, shell_quote, flatten, dir_dict, mac_address,
-    process_name, TemporaryDirectory, file_lock, commands_required, resolve,
+    process_name, TemporaryDirectory, file_lock, requires_commands, resolve,
     EnforcementError, parse_table, force_print
 )
 
@@ -112,10 +112,10 @@ class BaseTestCase(TestCase):
                     pass
         self.assertFalse(exists(tmp))
 
-    def test_commands_required(self):
-        commands_required('python')
+    def test_requires_commands(self):
+        requires_commands('python')
         with self.assertRaisesRegex(EnforcementError, 'i_dont_exist'):
-            commands_required('i_dont_exist')
+            requires_commands('i_dont_exist')
 
     @skipUnless(pep8, 'pep8 not installed')
     @skipUnless(mock, 'mock not installed')

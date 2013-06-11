@@ -19,7 +19,6 @@ from tempfile import mkdtemp
 from contextlib import contextmanager
 from fcntl import flock, LOCK_EX, LOCK_NB
 from datetime import timedelta, datetime
-from xml.etree import ElementTree
 from importlib import import_module
 from textwrap import dedent
 from argparse import (
@@ -62,18 +61,23 @@ def dir_dict(obj, default=None, only_public=True):
     return bunch_or_dict({i: getattr(obj, i, default) for i in names})
 
 
-def need_module(name, package=None):
-    package = package or name.split('.')[0]
+def requires_package(name, pypi_name=None):
+    pypi_name = pypi_name or name.split('.')[0]
     msg = (
         'Could not import %r. You can install it by typing:\n'
         'pip install %s'
-    ) % (name, package)
+    ) % (name, pypi_name)
     enforce(safe_import(name), msg)
     return safe_import(name)
 
 
+def requires_commands(commands):
+    missing = [cmd for cmd in commands.split() if not which(cmd)]
+    enforce(not missing, '%r command(s) not found' % ' '.join(missing))
+
+
 def pretty_xml(xml):
-    etree = need_module('lxml.etree')
+    etree = requires_package('lxml.etree')
     root = etree.fromstring(xml, etree.XMLParser(remove_blank_text=True))
     return etree.tostring(root, pretty_print=True, encoding='unicode')
 
@@ -87,7 +91,7 @@ def element_to_dict(elem, return_tuple=False):
 
 
 def xml_to_dict(xml, *args, **kwargs):
-    etree = need_module('lxml.etree')
+    etree = requires_package('lxml.etree')
     root = etree.fromstring(xml, etree.XMLParser(*args, **kwargs))
     return element_to_dict(root)
 
@@ -184,7 +188,7 @@ def shell_quote(s):
 
 
 def _cipher(key):
-    AES = need_module('Crypto.Cipher.AES', 'pycrypto')
+    AES = requires_package('Crypto.Cipher.AES', 'pycrypto')
     return AES.new(sha256(key).digest(), AES.MODE_CFB, '\x00' * AES.block_size)
 
 
@@ -219,11 +223,6 @@ def which(cmd):
     os_paths = os.environ['PATH'].split(os.pathsep)
     cmd_paths = [os.path.join(i, cmd) for i in os_paths]
     return [i for i in cmd_paths if os.path.exists(i)]
-
-
-def commands_required(commands):
-    missing = [cmd for cmd in commands.split() if not which(cmd)]
-    enforce(not missing, '%r command(s) not found' % ' '.join(missing))
 
 
 def shell(cmd=None, msg=None, caller=check_call, strict=False, **kwargs):
