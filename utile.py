@@ -13,17 +13,12 @@ from timeit import default_timer as timer
 from functools import wraps
 from shutil import rmtree
 from hashlib import sha256
-from inspect import getargspec
-from subprocess import check_output, check_call, Popen, PIPE
 from tempfile import mkdtemp
 from contextlib import contextmanager
 from fcntl import flock, LOCK_EX, LOCK_NB
 from datetime import timedelta, datetime
 from importlib import import_module
 from textwrap import dedent
-from argparse import (
-    ArgumentParser, ArgumentDefaultsHelpFormatter, RawDescriptionHelpFormatter
-)
 
 
 __version__ = '0.4.dev'
@@ -42,6 +37,16 @@ def resolve(name):
     return item
 
 
+class LazyImport(object):
+    def __init__(self, lookup=None):
+        self.lookup = lookup or dict()
+
+    def __getattr__(self, name):
+        obj = resolve(self.lookup.get(name, name))
+        setattr(self, name, obj)
+        return obj
+
+
 def safe_import(name, default=None):
     try:
         return resolve(name)
@@ -52,6 +57,11 @@ def safe_import(name, default=None):
 def force_print(*args, **kwargs):
     kwargs['file'] = sys.__stdout__
     print(*args, **kwargs)
+
+
+def bunch_or_dict(*args, **kwargs):
+    _class = safe_import('bunch.Bunch', dict)
+    return _class(*args, **kwargs)
 
 
 def dir_dict(obj, default=None, only_public=True):
@@ -116,6 +126,7 @@ def parse_table(text):
 
 
 def git_version(version):
+    from subprocess import Popen, PIPE
     if 'dev' not in version:
         return version
     git_details = ''
@@ -132,6 +143,8 @@ def git_version(version):
 
 
 def save_args(f):
+    from inspect import getargspec
+
     @wraps(f)
     def wrapper(self, *args, **kwargs):
         names = getargspec(f).args[1:]
@@ -155,7 +168,7 @@ def process_name(pid=None):
 
 
 def mac_address(interface='eth0'):
-    output = check_output(['ifconfig', interface])
+    output = lazy.subprocess.check_output(['ifconfig', interface])
     return re.search(r'HWaddr ([\w:]+)', output).group(1)
 
 
@@ -225,7 +238,8 @@ def which(cmd):
     return [i for i in cmd_paths if os.path.exists(i)]
 
 
-def shell(cmd=None, msg=None, caller=check_call, strict=False, **kwargs):
+def shell(cmd=None, msg=None, caller=None, strict=False, **kwargs):
+    caller = caller or lazy.subprocess.check_call
     msg = msg if msg else cmd
     kwargs.setdefault('shell', True)
     if kwargs['shell']:
@@ -258,11 +272,16 @@ def wait(timeout=None, delay=0.1, callable=None, *args, **kwargs):
         time.sleep(delay)
 
 
-class ArgDefaultRawHelpFormatter(
-        ArgumentDefaultsHelpFormatter, RawDescriptionHelpFormatter):
-    """Help message formatter which adds default values to argument help and
-    which retains any formatting in descriptions.
-    """
+def get_utile_arg_formatter():
+    from argparse import ArgumentDefaultsHelpFormatter as ArgumentDefaults
+    from argparse import RawDescriptionHelpFormatter as RawDescription
+
+    class UtileArgFormatter(ArgumentDefaults, RawDescription):
+        """
+        Help message formatter which adds default values to argument help and
+        which retains any formatting in descriptions.
+        """
+    return UtileArgFormatter
 
 
 class Arg(object):
@@ -274,8 +293,8 @@ class Arg(object):
 class ParseArgs(object):
     def __init__(self, description, *args, **kwargs):
         kwargs['description'] = description
-        kwargs.setdefault('formatter_class', ArgDefaultRawHelpFormatter)
-        self.parser = ArgumentParser(**kwargs)
+        kwargs.setdefault('formatter_class', get_utile_arg_formatter())
+        self.parser = lazy.argparse.ArgumentParser(**kwargs)
         for i in args:
             self.parser.add_argument(*i.args, **i.kwargs)
 
@@ -283,4 +302,4 @@ class ParseArgs(object):
         return dir_dict(self.parser.parse_args(args))
 
 
-bunch_or_dict = safe_import('bunch.Bunch', dict)
+lazy = LazyImport()

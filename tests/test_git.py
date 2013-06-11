@@ -20,7 +20,7 @@ class GitTestCase(TestCase):
 
     def test_git_describe(self):
         with patch('utile.which', return_value=['/usr/bin/git']):
-            with patch('utile.Popen') as MockPopen:
+            with patch('utile.lazy.subprocess.Popen') as MockPopen:
                 proc = MockPopen.return_value
                 proc.communicate.return_value = ['v0.2-8-gdbc0d9c\n']
                 self.assertEqual(git_version('0.3.dev'), '0.3.dev8')

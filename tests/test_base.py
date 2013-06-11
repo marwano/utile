@@ -83,7 +83,8 @@ class BaseTestCase(TestCase):
 
     @skipUnless(mock, 'mock not installed')
     def test_mac_address(self):
-        with patch('utile.check_output', return_value=IFCONFIG):
+        target = 'utile.lazy.subprocess.check_output'
+        with patch(target, return_value=IFCONFIG):
             self.assertEqual(mac_address(), 'd4:be:d9:a0:18:e1')
 
     def test_process_name(self):
