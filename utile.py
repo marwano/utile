@@ -107,20 +107,21 @@ def xml_to_dict(xml, *args, **kwargs):
 
 
 def slices_by_len(items):
-    return [(sum(items[0:k]), sum(items[0:k+1])) for k, v in enumerate(items)]
+    keys = range(len(items))
+    return [slice(sum(items[0:i]), sum(items[0:i+1])) for i in keys]
 
 
-def slice(data, slices):
-    return [data[start:end] for start, end in slices]
+def slice_data(data, slices):
+    return [data[i] for i in slices]
 
 
 def parse_table(text):
     lines = dedent(text).strip().splitlines()
     slices = slices_by_len([len(i) for i in re.findall('=+ *', lines[0])])
-    keys = [i.strip() for i in slice(lines[1], slices)]
+    keys = [i.strip() for i in slice_data(lines[1], slices)]
     rows = []
     for line in lines[3:-1]:
-        values = [i.strip() for i in slice(line, slices)]
+        values = [i.strip() for i in slice_data(line, slices)]
         rows.append(bunch_or_dict(zip(keys, values)))
     return rows
 
