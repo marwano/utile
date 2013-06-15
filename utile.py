@@ -19,6 +19,7 @@ from fcntl import flock, LOCK_EX, LOCK_NB
 from datetime import timedelta, datetime
 from importlib import import_module
 from textwrap import dedent
+from operator import itemgetter
 
 
 __version__ = '0.4.dev'
@@ -106,22 +107,18 @@ def xml_to_dict(xml, *args, **kwargs):
     return element_to_dict(root)
 
 
-def slices_by_len(items):
-    keys = range(len(items))
-    return [slice(sum(items[0:i]), sum(items[0:i+1])) for i in keys]
-
-
-def slice_data(data, slices):
-    return [data[i] for i in slices]
+def slicer_by_size(sizes):
+    s = [slice(sum(sizes[0:i]), sum(sizes[0:i+1])) for i in range(len(sizes))]
+    return itemgetter(*s)
 
 
 def parse_table(text):
     lines = dedent(text).strip().splitlines()
-    slices = slices_by_len([len(i) for i in re.findall('=+ *', lines[0])])
-    keys = [i.strip() for i in slice_data(lines[1], slices)]
+    slicer = slicer_by_size([len(i) for i in re.findall('=+ *', lines[0])])
+    keys = [i.strip() for i in slicer(lines[1])]
     rows = []
     for line in lines[3:-1]:
-        values = [i.strip() for i in slice_data(line, slices)]
+        values = [i.strip() for i in slicer(line)]
         rows.append(bunch_or_dict(zip(keys, values)))
     return rows
 
