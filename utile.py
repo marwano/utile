@@ -73,16 +73,13 @@ def dir_dict(obj, default=None, only_public=True):
 
 def requires_package(name, pypi_name=None):
     pypi_name = pypi_name or name.split('.')[0]
-    msg = (
-        'Could not import %r. You can install it by typing:\n'
-        'pip install %s'
-    ) % (name, pypi_name)
-    enforce(safe_import(name), msg)
+    msg = 'Could not import %r. Install it by running:\npip install %s'
+    enforce(safe_import(name), msg % (name, pypi_name))
     return safe_import(name)
 
 
 def requires_commands(commands):
-    missing = [cmd for cmd in commands.split() if not which(cmd)]
+    missing = [i for i in commands.split() if not which(i)]
     enforce(not missing, '%r command(s) not found' % ' '.join(missing))
 
 
