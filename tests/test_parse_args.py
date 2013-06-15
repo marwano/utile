@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 from unittest import TestCase
-from utile import Arg, ParseArgs
+from utile import Arg, arg_parser
 from support import StringIO
 
 import re
@@ -36,18 +36,20 @@ class ParseArgsTestCase(TestCase):
     def get_parser(self):
         greeting = Arg('--greeting', default='hello', help='how to greet')
         name = Arg('--name', default='world', help='who to greet')
-        return ParseArgs('greet someone', greeting, name, epilog=EPILOG)
+        return arg_parser('greet someone', greeting, name, epilog=EPILOG)
 
     def test_defaults(self):
+        actual = vars(self.get_parser().parse_args([]))
         expected = dict(greeting='hello', name='world')
-        self.assertEqual(self.get_parser().parse([]), expected)
+        self.assertEqual(actual, expected)
 
     def test_arguments(self):
+        actual = vars(self.get_parser().parse_args(['--name=jack']))
         expected = dict(greeting='hello', name='jack')
-        self.assertEqual(self.get_parser().parse(['--name=jack']), expected)
+        self.assertEqual(actual, expected)
 
     def test_help(self):
         output = StringIO()
-        self.get_parser().parser.print_help(file=output)
+        self.get_parser().print_help(file=output)
         cleanup = re.sub(r'usage:[^\[]*\[', 'usage:  [', output.getvalue())
         self.assertEqual(normalize(cleanup), normalize(HELP))

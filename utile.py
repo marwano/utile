@@ -288,16 +288,13 @@ class Arg(object):
         self.kwargs = kwargs
 
 
-class ParseArgs(object):
-    def __init__(self, description, *args, **kwargs):
-        kwargs['description'] = description
-        kwargs.setdefault('formatter_class', get_utile_arg_formatter())
-        self.parser = lazy.argparse.ArgumentParser(**kwargs)
-        for i in args:
-            self.parser.add_argument(*i.args, **i.kwargs)
-
-    def parse(self, args=None):
-        return dir_dict(self.parser.parse_args(args))
+def arg_parser(description, *args, **kwargs):
+    kwargs['description'] = description
+    kwargs.setdefault('formatter_class', get_utile_arg_formatter())
+    parser = lazy.argparse.ArgumentParser(**kwargs)
+    for i in args:
+        parser.add_argument(*i.args, **i.kwargs)
+    return parser
 
 
 lazy = LazyImport()
