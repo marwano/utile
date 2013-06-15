@@ -147,10 +147,10 @@ def save_args(f):
     def wrapper(self, *args, **kwargs):
         names = getargspec(f).args[1:]
         defaults = zip(reversed(names), reversed(getargspec(f).defaults))
-        items = chain(zip(names, args), kwargs.items(), defaults)
-        for k, v in items:
-            if not hasattr(self, k):
-                setattr(self, k, v)
+        positional = zip(names, args)
+        keyword = kwargs.items()
+        for k, v in chain(defaults, positional, keyword):
+            setattr(self, k, v)
         return f(self, *args, **kwargs)
     return wrapper
 
