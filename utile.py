@@ -56,8 +56,7 @@ def safe_import(name, default=None):
 
 
 def force_print(*args, **kwargs):
-    kwargs['file'] = sys.__stdout__
-    print(*args, **kwargs)
+    print(*args, file=sys.__stdout__, **kwargs)
 
 
 def bunch_or_dict(*args, **kwargs):
