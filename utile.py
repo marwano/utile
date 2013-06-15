@@ -274,10 +274,10 @@ def wait(timeout=None, delay=0.1, callable=None, *args, **kwargs):
 
 
 def get_utile_arg_formatter():
-    from argparse import ArgumentDefaultsHelpFormatter as ArgumentDefaults
-    from argparse import RawDescriptionHelpFormatter as RawDescription
+    from argparse import ArgumentDefaultsHelpFormatter as ArgDefaultsFormatter
+    from argparse import RawDescriptionHelpFormatter as RawDescriptionFormatter
 
-    class UtileArgFormatter(ArgumentDefaults, RawDescription):
+    class UtileArgFormatter(ArgDefaultsFormatter, RawDescriptionFormatter):
         """
         Help message formatter which adds default values to argument help and
         which retains any formatting in descriptions.
