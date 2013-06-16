@@ -53,6 +53,7 @@ class BaseTestCase(TestCase):
             'datetime': datetime,
             'datetime.datetime': datetime.datetime,
             'datetime.datetime.now': datetime.datetime.now,
+            (lambda: 'resolved'): 'resolved',
         }
         for name, expected in pairs.items():
             self.assertEqual(resolve(name), expected)
@@ -83,7 +84,7 @@ class BaseTestCase(TestCase):
 
     @skipUnless(mock, 'mock not installed')
     def test_mac_address(self):
-        target = 'utile.lazy.subprocess.check_output'
+        target = 'utile._lazy.subprocess.check_output'
         with patch(target, return_value=IFCONFIG):
             self.assertEqual(mac_address(), 'd4:be:d9:a0:18:e1')
 

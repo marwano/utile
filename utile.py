@@ -28,6 +28,8 @@ string_types = str if PY3 else basestring
 
 
 def resolve(name):
+    if callable(name):
+        return name()
     item, module = None, []
     for i in name.split('.'):
         module.append(i)
@@ -38,7 +40,7 @@ def resolve(name):
     return item
 
 
-class LazyImport(object):
+class LazyResolve(object):
     def __init__(self, lookup=None):
         self.lookup = lookup or dict()
 
@@ -162,7 +164,7 @@ def process_name(pid=None):
 
 
 def mac_address(interface='eth0'):
-    output = lazy.subprocess.check_output(['ifconfig', interface])
+    output = _lazy.subprocess.check_output(['ifconfig', interface])
     return re.search(r'HWaddr ([\w:]+)', output).group(1)
 
 
@@ -233,7 +235,7 @@ def which(cmd):
 
 
 def shell(cmd=None, msg=None, caller=None, strict=False, **kwargs):
-    caller = caller or lazy.subprocess.check_call
+    caller = caller or _lazy.subprocess.check_call
     msg = msg if msg else cmd
     kwargs.setdefault('shell', True)
     if kwargs['shell']:
@@ -266,7 +268,22 @@ def wait(timeout=None, delay=0.1, callable=None, *args, **kwargs):
         time.sleep(delay)
 
 
-def get_utile_arg_formatter():
+class Arg(object):
+    def __init__(self, *args, **kwargs):
+        self.args = args
+        self.kwargs = kwargs
+
+
+def arg_parser(description, *args, **kwargs):
+    kwargs['description'] = description
+    kwargs.setdefault('formatter_class', formatter.UtileArgFormatter)
+    parser = _lazy.argparse.ArgumentParser(**kwargs)
+    for i in args:
+        parser.add_argument(*i.args, **i.kwargs)
+    return parser
+
+
+def _lazy_define_arg_formatter():
     from argparse import ArgumentDefaultsHelpFormatter as ArgDefaultsFormatter
     from argparse import RawDescriptionHelpFormatter as RawDescriptionFormatter
 
@@ -277,20 +294,5 @@ def get_utile_arg_formatter():
         """
     return UtileArgFormatter
 
-
-class Arg(object):
-    def __init__(self, *args, **kwargs):
-        self.args = args
-        self.kwargs = kwargs
-
-
-def arg_parser(description, *args, **kwargs):
-    kwargs['description'] = description
-    kwargs.setdefault('formatter_class', get_utile_arg_formatter())
-    parser = lazy.argparse.ArgumentParser(**kwargs)
-    for i in args:
-        parser.add_argument(*i.args, **i.kwargs)
-    return parser
-
-
-lazy = LazyImport()
+_lazy = LazyResolve()
+formatter = LazyResolve(dict(UtileArgFormatter=_lazy_define_arg_formatter))
