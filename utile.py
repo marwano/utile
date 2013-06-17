@@ -284,14 +284,13 @@ def arg_parser(description, *args, **kwargs):
 
 
 def _lazy_define_arg_formatter():
-    from argparse import ArgumentDefaultsHelpFormatter as ArgDefaultsFormatter
-    from argparse import RawDescriptionHelpFormatter as RawDescriptionFormatter
-
-    class UtileArgFormatter(ArgDefaultsFormatter, RawDescriptionFormatter):
+    class UtileArgFormatter(_lazy.argparse.ArgumentDefaultsHelpFormatter,
+                            _lazy.argparse.RawDescriptionHelpFormatter):
         """
         Help message formatter which adds default values to argument help and
         which retains any formatting in descriptions.
         """
+
     return UtileArgFormatter
 
 _lazy = LazyResolve()
