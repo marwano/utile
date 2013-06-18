@@ -2,7 +2,7 @@
 
 import sys
 from unittest import TestLoader, TextTestRunner
-from support import TEST_DIR
+from testsuite.support import TEST_DIR
 
 suite = TestLoader().discover(TEST_DIR)
 

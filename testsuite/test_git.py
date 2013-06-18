@@ -2,7 +2,7 @@
 
 from unittest import TestCase, skipUnless
 from utile import git_version, safe_import
-from support import patch, mock
+from testsuite.support import patch, mock
 
 PKG_INFO = """\
 Metadata-Version: 1.1

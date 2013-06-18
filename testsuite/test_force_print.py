@@ -4,7 +4,7 @@ import sys
 from unittest import TestCase, skipUnless
 from subprocess import check_output
 from utile import force_print
-from support import patch, mock, StringIO
+from testsuite.support import patch, mock, StringIO
 
 
 @patch('sys.stdout', new_callable=StringIO)

@@ -2,7 +2,7 @@
 
 from unittest import TestCase
 from utile import Arg, arg_parser
-from support import StringIO
+from testsuite.support import StringIO
 
 import re
 

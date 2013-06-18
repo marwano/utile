@@ -6,7 +6,7 @@ from unittest import TestCase, skipUnless
 from tempfile import NamedTemporaryFile
 from utile import shell
 from subprocess import CalledProcessError
-from support import patch, mock, StringIO, read_file
+from testsuite.support import patch, mock, StringIO, read_file
 
 
 @skipUnless(mock, 'mock not installed')

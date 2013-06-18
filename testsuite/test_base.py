@@ -8,7 +8,7 @@ from glob import glob
 import datetime
 import os.path
 import sys
-from support import (
+from testsuite.support import (
     BASE_DIR, patch, mock, Crypto, pep8, StringIO, TestCase, int_to_byte
 )
 from utile import (
@@ -123,7 +123,7 @@ class BaseTestCase(TestCase):
     @skipUnless(mock, 'mock not installed')
     def test_pep8(self):
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
-            style = pep8.StyleGuide(paths=[BASE_DIR])
+            style = pep8.StyleGuide(paths=[BASE_DIR], exclude=['.tox'])
             errors = style.check_files().total_errors
             msg = '%s pep8 error(s)\n%s' % (errors, mock_stdout.getvalue())
             self.assertFalse(errors, msg)

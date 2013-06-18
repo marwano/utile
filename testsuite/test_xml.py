@@ -2,7 +2,7 @@
 
 from unittest import TestCase, skipUnless
 from utile import pretty_xml, xml_to_dict, element_to_dict
-from support import etree
+from testsuite.support import etree
 
 XML_DATA = "<html><body><h1>test1</h1><h2>test2</h2></body></html>"
 XML_PRETTY = """\

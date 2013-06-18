@@ -2,7 +2,7 @@
 
 from unittest import TestCase, skipUnless
 from utile import wait, TimeoutError, safe_import
-from support import patch, mock
+from testsuite.support import patch, mock
 
 
 @skipUnless(mock, 'mock not installed')
