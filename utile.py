@@ -125,12 +125,12 @@ def git_version(version):
     from subprocess import Popen, PIPE
     if 'dev' not in version:
         return version
-    git_details = ''
+    describe = ''
     if which('git'):
-        cmd = ['git', 'describe']
-        git_details = Popen(cmd, stdout=PIPE, stderr=PIPE).communicate()[0]
-    if git_details:
-        return version + git_details.split('-')[1]
+        process = Popen(['git', 'describe'], stdout=PIPE, stderr=PIPE)
+        describe, _ = process.communicate()
+    if describe:
+        return version + describe.decode('utf8').split('-')[1]
     elif os.path.exists('PKG-INFO'):
         info = open('PKG-INFO').read()
         return re.findall(r'^Version: (.*)$', info, re.MULTILINE)[0]

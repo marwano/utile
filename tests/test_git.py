@@ -22,7 +22,7 @@ class GitTestCase(TestCase):
         with patch('utile.which', return_value=['/usr/bin/git']):
             with patch('utile._lazy.subprocess.Popen') as MockPopen:
                 proc = MockPopen.return_value
-                proc.communicate.return_value = ['v0.2-8-gdbc0d9c\n']
+                proc.communicate.return_value = (b'v0.2-8-gdbc0d9c\n', b'')
                 self.assertEqual(git_version('0.3.dev'), '0.3.dev8')
 
     def test_pkg_info(self):
