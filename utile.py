@@ -17,7 +17,6 @@ from tempfile import mkdtemp
 from contextlib import contextmanager
 from fcntl import flock, LOCK_EX, LOCK_NB
 from datetime import timedelta, datetime
-from importlib import import_module
 from textwrap import dedent
 from operator import itemgetter
 
@@ -36,7 +35,11 @@ def resolve(name):
         try:
             item = getattr(item, i)
         except AttributeError:
-            item = import_module('.'.join(module))
+            top_module = __import__('.'.join(module))
+            if item:
+                item = getattr(item, i)
+            else:
+                item = top_module
     return item
 
 
@@ -70,7 +73,7 @@ def dir_dict(obj, default=None, only_public=True):
     names = dir(obj)
     if only_public:
         names = [i for i in names if not i.startswith('_')]
-    return bunch_or_dict({i: getattr(obj, i, default) for i in names})
+    return bunch_or_dict((i, getattr(obj, i, default)) for i in names)
 
 
 def requires_package(name, pypi_name=None):
@@ -164,8 +167,9 @@ def process_name(pid=None):
 
 
 def mac_address(interface='eth0'):
-    output = _lazy.subprocess.check_output(['ifconfig', interface])
-    return re.search(r'HWaddr ([\w:]+)', output).group(1)
+    from subprocess import Popen, PIPE
+    output, _ = Popen(['ifconfig', interface], stdout=PIPE).communicate()
+    return re.search(r'HWaddr ([\w:]+)', output.decode('utf8')).group(1)
 
 
 @contextmanager
@@ -235,7 +239,8 @@ def which(cmd):
 
 
 def shell(cmd=None, msg=None, caller=None, strict=False, **kwargs):
-    caller = caller or _lazy.subprocess.check_call
+    from subprocess import check_call
+    caller = caller or check_call
     msg = msg if msg else cmd
     kwargs.setdefault('shell', True)
     if kwargs['shell']:
@@ -245,7 +250,7 @@ def shell(cmd=None, msg=None, caller=None, strict=False, **kwargs):
             msg = 'strict can only be used when shell=True and cmd is a string'
             raise ValueError(msg)
         cmd = 'set -e;' + cmd
-    print(' {} '.format(msg).center(60, '-'))
+    print(' {0} '.format(msg).center(60, '-'))
     start = timer()
     returncode = caller(cmd, **kwargs)
     print('duration: %s' % timedelta(seconds=timer() - start))
@@ -275,17 +280,20 @@ class Arg(object):
 
 
 def arg_parser(description, *args, **kwargs):
+    from argparse import ArgumentParser
     kwargs['description'] = description
     kwargs.setdefault('formatter_class', formatter.UtileArgFormatter)
-    parser = _lazy.argparse.ArgumentParser(**kwargs)
+    parser = ArgumentParser(**kwargs)
     for i in args:
         parser.add_argument(*i.args, **i.kwargs)
     return parser
 
 
 def _lazy_define_arg_formatter():
-    class UtileArgFormatter(_lazy.argparse.ArgumentDefaultsHelpFormatter,
-                            _lazy.argparse.RawDescriptionHelpFormatter):
+    import argparse
+
+    class UtileArgFormatter(argparse.ArgumentDefaultsHelpFormatter,
+                            argparse.RawDescriptionHelpFormatter):
         """
         Help message formatter which adds default values to argument help and
         which retains any formatting in descriptions.
@@ -293,5 +301,5 @@ def _lazy_define_arg_formatter():
 
     return UtileArgFormatter
 
-_lazy = LazyResolve()
+
 formatter = LazyResolve(dict(UtileArgFormatter=_lazy_define_arg_formatter))

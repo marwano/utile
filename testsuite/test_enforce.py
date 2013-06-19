@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from testsuite.support import TestCase
+from testsuite.support import TestCase, unittest
 from utile import enforce, EnforcementError, enforce_clean_exit
 
 

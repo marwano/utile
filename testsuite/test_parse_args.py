@@ -1,8 +1,7 @@
 #!/usr/bin/env python
 
-from unittest import TestCase
 from utile import Arg, arg_parser
-from testsuite.support import StringIO
+from testsuite.support import StringIO, TestCase
 
 import re
 

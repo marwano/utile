@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
-from unittest import skipUnless
-from subprocess import check_output
+from subprocess import Popen, PIPE
 from tempfile import NamedTemporaryFile
 from os.path import exists
 from glob import glob
@@ -9,7 +8,8 @@ import datetime
 import os.path
 import sys
 from testsuite.support import (
-    BASE_DIR, patch, mock, Crypto, pep8, StringIO, TestCase, int_to_byte
+    BASE_DIR, patch, mock, Crypto, pep8, StringIO, TestCase, int_to_byte,
+    unittest
 )
 from utile import (
     safe_import, encrypt, decrypt, shell_quote, flatten, dir_dict, mac_address,
@@ -17,7 +17,7 @@ from utile import (
     EnforcementError, parse_table, force_print
 )
 
-IFCONFIG = """\
+IFCONFIG = b"""\
 eth0      Link encap:Ethernet  HWaddr d4:be:d9:a0:18:e1
           inet addr:10.0.0.13  Bcast:10.0.0.255  Mask:255.255.255.0
           inet6 addr: fe80::d6be:d9ff:fea2:f8e1/64 Scope:Link
@@ -25,7 +25,7 @@ eth0      Link encap:Ethernet  HWaddr d4:be:d9:a0:18:e1
 
 
 class BaseTestCase(TestCase):
-    @skipUnless(Crypto, 'pycrypto not installed')
+    @unittest.skipUnless(Crypto, 'pycrypto not installed')
     def test_crypto(self):
         BYTES_ALL = b''.join(map(int_to_byte, range(256)))
 
@@ -37,13 +37,14 @@ class BaseTestCase(TestCase):
             actual = decrypt(key, encrypt(key, expected))
             self.assertEqual(actual, expected)
 
-    @skipUnless(exists('/bin/echo'), '/bin/echo not found')
+    @unittest.skipUnless(exists('/bin/echo'), '/bin/echo not found')
     def test_shell_quote(self):
         full_ascii = ''.join(map(chr, range(1, 128)))
         for input in ['testing...', full_ascii]:
             cmd = '/bin/echo -n %s' % shell_quote(input)
-            output = check_output(cmd, shell=True)
-            self.assertEqual(input, output.decode('utf8'))
+            process = Popen(cmd, stdout=PIPE, shell=True)
+            output = process.communicate()[0].decode('utf8')
+            self.assertEqual(input, output)
 
     def test_flatten(self):
         self.assertEqual(flatten([(0, 1), (2, 3)]), [0, 1, 2, 3])
@@ -82,10 +83,11 @@ class BaseTestCase(TestCase):
         data = dir_dict(Dummy(), only_public=False)
         self.assertTrue('_private' in data)
 
-    @skipUnless(mock, 'mock not installed')
+    @unittest.skipUnless(mock, 'mock not installed')
     def test_mac_address(self):
-        target = 'utile._lazy.subprocess.check_output'
-        with patch(target, return_value=IFCONFIG):
+        with patch('subprocess.Popen') as MockPopen:
+            proc = MockPopen.return_value
+            proc.communicate.return_value = (IFCONFIG, b'')
             self.assertEqual(mac_address(), 'd4:be:d9:a0:18:e1')
 
     def test_process_name(self):
@@ -119,8 +121,8 @@ class BaseTestCase(TestCase):
         with self.assertRaisesRegex(EnforcementError, 'i_dont_exist'):
             requires_commands('i_dont_exist')
 
-    @skipUnless(pep8, 'pep8 not installed')
-    @skipUnless(mock, 'mock not installed')
+    @unittest.skipUnless(pep8, 'pep8 not installed')
+    @unittest.skipUnless(mock, 'mock not installed')
     def test_pep8(self):
         with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
             style = pep8.StyleGuide(paths=[BASE_DIR], exclude=['.tox'])

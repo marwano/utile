@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from unittest import TestCase
+from testsuite.support import TestCase
 from utile import save_args
 
 

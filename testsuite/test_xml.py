@@ -1,8 +1,7 @@
 #!/usr/bin/env python
 
-from unittest import TestCase, skipUnless
 from utile import pretty_xml, xml_to_dict, element_to_dict
-from testsuite.support import etree
+from testsuite.support import etree, TestCase, unittest
 
 XML_DATA = "<html><body><h1>test1</h1><h2>test2</h2></body></html>"
 XML_PRETTY = """\
@@ -16,7 +15,7 @@ XML_PRETTY = """\
 XML_DICT = {'body': {'h2': 'test2', 'h1': 'test1'}}
 
 
-@skipUnless(etree, 'lxml not installed')
+@unittest.skipUnless(etree, 'lxml not installed')
 class XMLTestCase(TestCase):
     def test_pretty_xml(self):
         self.assertEqual(pretty_xml(XML_DATA), XML_PRETTY)

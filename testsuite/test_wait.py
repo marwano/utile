@@ -1,11 +1,10 @@
 #!/usr/bin/env python
 
-from unittest import TestCase, skipUnless
 from utile import wait, TimeoutError, safe_import
-from testsuite.support import patch, mock
+from testsuite.support import patch, mock, TestCase, unittest
 
 
-@skipUnless(mock, 'mock not installed')
+@unittest.skipUnless(mock, 'mock not installed')
 @patch('time.sleep')
 @patch('utile.timer', side_effect=range(100))
 class WaitTestCase(TestCase):

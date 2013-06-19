@@ -2,15 +2,16 @@
 
 import os
 from os.path import exists
-from unittest import TestCase, skipUnless
 from tempfile import NamedTemporaryFile
 from utile import shell
 from subprocess import CalledProcessError
-from testsuite.support import patch, mock, StringIO, read_file
+from testsuite.support import (
+    patch, mock, StringIO, read_file, TestCase, unittest
+)
 
 
-@skipUnless(mock, 'mock not installed')
-@skipUnless(exists('/bin/echo'), '/bin/echo not found')
+@unittest.skipUnless(mock, 'mock not installed')
+@unittest.skipUnless(exists('/bin/echo'), '/bin/echo not found')
 @patch('sys.stdout', new_callable=StringIO)
 class ShellTestCase(TestCase):
     def setUp(self):

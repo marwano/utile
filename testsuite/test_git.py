@@ -1,8 +1,7 @@
 #!/usr/bin/env python
 
-from unittest import TestCase, skipUnless
 from utile import git_version, safe_import
-from testsuite.support import patch, mock
+from testsuite.support import patch, mock, TestCase, unittest
 
 PKG_INFO = """\
 Metadata-Version: 1.1
@@ -12,7 +11,7 @@ Summary: Example package for testing...
 """
 
 
-@skipUnless(mock, 'mock not installed')
+@unittest.skipUnless(mock, 'mock not installed')
 class GitTestCase(TestCase):
     def test_non_dev(self):
         for version in ['1.0a1', '1.0b2', '1.0b2.post345', '1.0c1', '1.0']:
@@ -20,7 +19,7 @@ class GitTestCase(TestCase):
 
     def test_git_describe(self):
         with patch('utile.which', return_value=['/usr/bin/git']):
-            with patch('utile._lazy.subprocess.Popen') as MockPopen:
+            with patch('subprocess.Popen') as MockPopen:
                 proc = MockPopen.return_value
                 proc.communicate.return_value = (b'v0.2-8-gdbc0d9c\n', b'')
                 self.assertEqual(git_version('0.3.dev'), '0.3.dev8')
