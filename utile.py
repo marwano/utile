@@ -26,11 +26,11 @@ PY3 = sys.version_info[0] == 3
 string_types = str if PY3 else basestring
 
 
-def resolve(name):
-    if callable(name):
-        return name()
+def resolve(obj):
+    if callable(obj):
+        return obj()
     item, module = None, []
-    for i in name.split('.'):
+    for i in obj.split('.'):
         module.append(i)
         try:
             item = getattr(item, i)
