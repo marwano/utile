@@ -113,13 +113,17 @@ def slicer_by_size(sizes):
     return itemgetter(*s)
 
 
-def parse_table(text):
+def parse_table(text, yaml=False):
+    if yaml:
+        decoder = requires_package('yaml').load
+    else:
+        decoder = lambda x: x
     lines = dedent(text).strip().splitlines()
     slicer = slicer_by_size([len(i) for i in re.findall('=+ *', lines[0])])
     keys = [i.strip() for i in slicer(lines[1])]
     rows = []
     for line in lines[3:-1]:
-        values = [i.strip() for i in slicer(line)]
+        values = [decoder(i.strip()) for i in slicer(line)]
         rows.append(bunch_or_dict(zip(keys, values)))
     return rows
 

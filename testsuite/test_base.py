@@ -133,18 +133,24 @@ class BaseTestCase(TestCase):
     def test_parse_table(self):
         input = """
             ==========  ==========  ================
-            color       hex         rgb
+            name        number      boolean
             ==========  ==========  ================
-            red         #FF0000     rgb(255,0,0)
-            green       #00FF00     rgb(0,255,0)
-            blue        #0000FF     rgb(0,0,255)
-            yellow      #FFFF00     rgb(255,255,0)
+            zero        0           false
+            one         1           true
+            two         2           true
             ==========  ==========  ================
         """
+
         output = [
-            {'color': 'red', 'hex': '#FF0000', 'rgb': 'rgb(255,0,0)'},
-            {'color': 'green', 'hex': '#00FF00', 'rgb': 'rgb(0,255,0)'},
-            {'color': 'blue', 'hex': '#0000FF', 'rgb': 'rgb(0,0,255)'},
-            {'color': 'yellow', 'hex': '#FFFF00', 'rgb': 'rgb(255,255,0)'},
+            dict(name='zero', number='0', boolean='false'),
+            dict(name='one', number='1', boolean='true'),
+            dict(name='two', number='2', boolean='true'),
         ]
         self.assertEqual(parse_table(input), output)
+
+        output = [
+            dict(name='zero', number=0, boolean=False),
+            dict(name='one', number=1, boolean=True),
+            dict(name='two', number=2, boolean=True),
+        ]
+        self.assertEqual(parse_table(input, yaml=True), output)
