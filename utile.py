@@ -8,6 +8,7 @@ import re
 import os
 import os.path
 import sys
+import string
 from itertools import chain
 from timeit import default_timer as timer
 from functools import wraps
@@ -275,6 +276,15 @@ def wait(timeout=None, delay=0.1, callable=None, *args, **kwargs):
         if timeout and duration > timeout:
             raise TimeoutError('waited for %0.3fs' % duration)
         time.sleep(delay)
+
+
+def reformat_query(query, *args, **kwargs):
+    f = string.Formatter()
+    parsed = list(f.parse(query))
+    query = '?'.join([i[0] for i in parsed])
+    fields = [i[1] for i in parsed if i[1] is not None]
+    parameters = tuple(f.get_field(i, args, kwargs)[0] for i in fields)
+    return query, parameters
 
 
 class Arg(object):

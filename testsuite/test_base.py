@@ -14,7 +14,7 @@ from testsuite.support import (
 from utile import (
     safe_import, encrypt, decrypt, shell_quote, flatten, dir_dict, mac_address,
     process_name, TemporaryDirectory, file_lock, requires_commands, resolve,
-    EnforcementError, parse_table, force_print
+    EnforcementError, parse_table, force_print, reformat_query
 )
 
 IFCONFIG = b"""\
@@ -154,3 +154,16 @@ class BaseTestCase(TestCase):
             dict(name='two', number=2, boolean=True),
         ]
         self.assertEqual(parse_table(input, yaml=True), output)
+
+    def test_reformat_query(self):
+        class Item(object):
+            name = 'Dummy'
+            price = 10
+            size = 'Small'
+
+        i = Item()
+        size = dict(size=i.size)
+        query = "INSERT INTO items VALUES ({name}, {0.price}, {1[size]})"
+        query, parameters = reformat_query(query, i, size, name=i.name)
+        self.assertEqual(query, 'INSERT INTO items VALUES (?, ?, ?)')
+        self.assertEqual(parameters, ('Dummy', 10, 'Small'))
