@@ -116,7 +116,7 @@ def slicer_by_size(sizes):
 
 def parse_table(text, yaml=False):
     if yaml:
-        decoder = requires_package('yaml').load
+        decoder = requires_package('yaml', 'PyYAML').load
     else:
         decoder = lambda x: x
     lines = dedent(text).strip().splitlines()
