@@ -218,6 +218,14 @@ def decrypt(key, data):
     return _cipher(key).decrypt(data)
 
 
+def raises(exceptions, func, *args, **kwargs):
+    try:
+        func(*args, **kwargs)
+    except exceptions:
+        return True
+    return False
+
+
 class EnforcementError(Exception):
     pass
 
@@ -229,9 +237,9 @@ def enforce(rule, msg, exception=EnforcementError):
 
 def enforce_clean_exit(func):
     @wraps(func)
-    def wrapper(*args, **kwds):
+    def wrapper(*args, **kwargs):
         try:
-            return func(*args, **kwds)
+            return func(*args, **kwargs)
         except EnforcementError as err:
             sys.exit('ERROR: %s' % err)
     return wrapper

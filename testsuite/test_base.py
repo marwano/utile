@@ -14,7 +14,7 @@ from testsuite.support import (
 from utile import (
     safe_import, encrypt, decrypt, shell_quote, flatten, dir_dict, mac_address,
     process_name, TemporaryDirectory, file_lock, requires_commands, resolve,
-    EnforcementError, parse_table, force_print, reformat_query
+    EnforcementError, parse_table, force_print, reformat_query, raises
 )
 
 IFCONFIG = b"""\
@@ -129,6 +129,12 @@ class BaseTestCase(TestCase):
             errors = style.check_files().total_errors
             msg = '%s pep8 error(s)\n%s' % (errors, mock_stdout.getvalue())
             self.assertFalse(errors, msg)
+
+    def test_raises(self):
+        self.assertTrue(raises(ValueError, int, 'not a number'))
+        self.assertFalse(raises(ValueError, int, '10'))
+        with self.assertRaisesRegex(ValueError, 'invalid literal'):
+            self.assertTrue(raises(ImportError, int, 'not a number'))
 
     def test_parse_table(self):
         input = """
