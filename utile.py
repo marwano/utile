@@ -171,6 +171,10 @@ def process_name(pid=None):
         return f.read().strip('\x00').split('\x00')
 
 
+def get_pid_list():
+    return sorted(int(i) for i in os.listdir('/proc') if i.isdigit())
+
+
 def mac_address(interface='eth0'):
     from subprocess import Popen, PIPE
     output, _ = Popen(['ifconfig', interface], stdout=PIPE).communicate()

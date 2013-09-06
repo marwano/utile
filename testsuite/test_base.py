@@ -13,8 +13,9 @@ from testsuite.support import (
 )
 from utile import (
     safe_import, encrypt, decrypt, shell_quote, flatten, dir_dict, mac_address,
-    process_name, TemporaryDirectory, file_lock, requires_commands, resolve,
-    EnforcementError, parse_table, force_print, reformat_query, raises
+    process_name, get_pid_list, TemporaryDirectory, file_lock,
+    requires_commands, resolve, EnforcementError, parse_table, force_print,
+    reformat_query, raises
 )
 
 IFCONFIG = b"""\
@@ -92,6 +93,9 @@ class BaseTestCase(TestCase):
 
     def test_process_name(self):
         self.assertEqual(process_name(1), ['/sbin/init'])
+
+    def test_get_pid_list(self):
+        self.assertIn(os.getpid(), get_pid_list())
 
     def test_temp_dir(self):
         with TemporaryDirectory() as tmp:
