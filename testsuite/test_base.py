@@ -93,6 +93,8 @@ class BaseTestCase(TestCase):
 
     def test_process_name(self):
         self.assertEqual(process_name(1), ['/sbin/init'])
+        self.assertRaises(IOError, process_name, -1)
+        self.assertEqual(process_name(-1, ignore_errors=True), [])
 
     def test_get_pid_list(self):
         self.assertIn(os.getpid(), get_pid_list())

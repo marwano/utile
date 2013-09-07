@@ -165,10 +165,16 @@ def flatten(data):
     return list(chain.from_iterable(data))
 
 
-def process_name(pid=None):
+def process_name(pid=None, ignore_errors=False):
     pid = pid or os.getpid()
-    with open('/proc/%s/cmdline' % pid) as f:
-        return f.read().strip('\x00').split('\x00')
+    try:
+        with open('/proc/%s/cmdline' % pid) as f:
+            return f.read().strip('\x00').split('\x00')
+    except IOError:
+        if ignore_errors:
+            return []
+        else:
+            raise
 
 
 def get_pid_list():
