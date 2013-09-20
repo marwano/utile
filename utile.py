@@ -284,16 +284,24 @@ class TimeoutError(Exception):
     pass
 
 
-def wait(timeout=None, delay=0.1, callable=None, *args, **kwargs):
+def _wait_base(target, timeout, delay, callable, *args, **kwargs):
     start = timer()
     while True:
         result = callable(*args, **kwargs)
-        if result:
+        if bool(result) == target:
             return result
         duration = timer() - start
         if timeout and duration > timeout:
             raise TimeoutError('waited for %0.3fs' % duration)
         time.sleep(delay)
+
+
+def wait(timeout=None, delay=0.1, callable=None, *args, **kwargs):
+    return _wait_base(True, timeout, delay, callable, *args, **kwargs)
+
+
+def wait_false(timeout=None, delay=0.1, callable=None, *args, **kwargs):
+    return _wait_base(False, timeout, delay, callable, *args, **kwargs)
 
 
 def reformat_query(query, *args, **kwargs):
