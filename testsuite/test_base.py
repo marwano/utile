@@ -7,6 +7,8 @@ from glob import glob
 import datetime
 import os.path
 import sys
+import utile
+import time
 from testsuite.support import (
     BASE_DIR, patch, mock, Crypto, pep8, StringIO, TestCase, int_to_byte,
     unittest
@@ -15,7 +17,7 @@ from utile import (
     safe_import, encrypt, decrypt, shell_quote, flatten, dir_dict, mac_address,
     process_name, get_pid_list, TemporaryDirectory, file_lock,
     requires_commands, resolve, EnforcementError, parse_table, force_print,
-    reformat_query, raises
+    reformat_query, raises, countdown
 )
 
 IFCONFIG = b"""\
@@ -135,6 +137,15 @@ class BaseTestCase(TestCase):
             errors = style.check_files().total_errors
             msg = '%s pep8 error(s)\n%s' % (errors, mock_stdout.getvalue())
             self.assertFalse(errors, msg)
+
+    @unittest.skipUnless(mock, 'mock not installed')
+    def test_countdown(self):
+        with patch('utile.timer', side_effect=[0, 0, 0, 1, 1, 2, 2]):
+            with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
+                with patch('time.sleep'):
+                    countdown(2, delay=1)
+        expected = 'Countdown: 2\rCountdown: 1\rCountdown: done\n'
+        self.assertEqual(mock_stdout.getvalue(), expected)
 
     def test_raises(self):
         self.assertTrue(raises(ValueError, int, 'not a number'))

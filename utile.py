@@ -20,11 +20,39 @@ from fcntl import flock, LOCK_EX, LOCK_NB
 from datetime import timedelta, datetime
 from textwrap import dedent
 from operator import itemgetter
+from math import log10
 
 
 __version__ = '0.4.dev'
 PY3 = sys.version_info[0] == 3
 string_types = str if PY3 else basestring
+_builtin_print = print
+
+
+# print(*objects, sep=' ', end='\n', file=sys.stdout, flush=False)
+def print(*args, **kwargs):
+    clean = dict([(k, v) for k, v in kwargs.items() if k != 'flush'])
+    _builtin_print(*args, **clean)
+    file = kwargs.get('file', sys.stdout)
+    if kwargs.get('flush'):
+        file.flush()
+
+
+def force_print(*args, **kwargs):
+    print(*args, file=sys.__stdout__, **kwargs)
+
+
+def countdown(length, msg='Countdown', delay=0.1):
+    start = timer()
+    maxlen = 0
+    template = '{msg}: {remaining:.%df}' % -log10(delay)
+    while timer() - start < length:
+        remaining = (start + length) - timer()
+        text = template.format(msg=msg, remaining=remaining)
+        maxlen = max(maxlen, len(text))
+        print(text.ljust(maxlen), end='\r', flush=True)
+        time.sleep(delay)
+    print('{msg}: done'.format(msg=msg).ljust(maxlen))
 
 
 def resolve(obj):
@@ -59,10 +87,6 @@ def safe_import(name, default=None):
         return resolve(name)
     except ImportError:
         return default
-
-
-def force_print(*args, **kwargs):
-    print(*args, file=sys.__stdout__, **kwargs)
 
 
 def bunch_or_dict(*args, **kwargs):
