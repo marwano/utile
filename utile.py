@@ -285,18 +285,22 @@ def which(cmd):
     return [i for i in cmd_paths if os.path.exists(i)]
 
 
-def shell(cmd=None, msg=None, caller=None, strict=False, **kwargs):
+def shell(cmd=None, msg=None, caller=None, strict=False, verbose=False,
+          **kwargs):
     from subprocess import check_call
     caller = caller or check_call
     msg = msg if msg else cmd
     kwargs.setdefault('shell', True)
     if kwargs['shell']:
         kwargs.setdefault('executable', '/bin/bash')
-    if strict:
+    if strict or verbose:
         if not kwargs['shell'] or not isinstance(cmd, string_types):
-            msg = 'strict can only be used when shell=True and cmd is a string'
-            raise ValueError(msg)
-        cmd = 'set -e;' + cmd
+            raise ValueError('strict or verbose can only be used when '
+                             'shell=True and cmd is a string')
+    if strict:
+        cmd = 'set -e\n' + cmd
+    if verbose:
+        cmd = 'set -v\n' + cmd
     print(' {0} '.format(msg).center(60, '-'))
     start = timer()
     returncode = caller(cmd, **kwargs)
