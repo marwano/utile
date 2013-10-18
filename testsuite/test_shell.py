@@ -28,6 +28,12 @@ class ShellTestCase(TestCase):
             shell(self.hello, stdout=out, stderr=err, verbose=True)
             self.assertEqual(read_file(err.name).strip(), self.hello)
 
+    def test_verbose_with_strict(self, mock_stdout):
+        with NamedTemporaryFile() as out, NamedTemporaryFile() as err:
+            shell(self.hello, stdout=out, stderr=err, verbose=True,
+                  strict=True)
+            self.assertEqual(read_file(err.name).strip(), self.hello)
+
     def test_many_commands_without_strict(self, mock_stdout):
         with NamedTemporaryFile() as out, NamedTemporaryFile() as err:
             self.assertEqual(shell(self.invalid, stdout=out, stderr=err), 0)

@@ -235,10 +235,6 @@ def file_lock(path):
         os.remove(path)
 
 
-def shell_quote(s):
-    return "'" + s.replace("'", "'\"'\"'") + "'"
-
-
 def _cipher(key):
     AES = requires_package('Crypto.Cipher.AES', 'pycrypto')
     return AES.new(sha256(key).digest(), AES.MODE_CFB, '\x00' * AES.block_size)
@@ -297,15 +293,22 @@ def shell(cmd=None, msg=None, caller=None, strict=False, verbose=False,
         if not kwargs['shell'] or not isinstance(cmd, string_types):
             raise ValueError('strict or verbose can only be used when '
                              'shell=True and cmd is a string')
+    set_options = ''
     if strict:
-        cmd = 'set -e\n' + cmd
+        set_options += 'e'
     if verbose:
-        cmd = 'set -v\n' + cmd
+        set_options += 'v'
+    if set_options:
+        cmd = 'set -{}\n{}'.format(set_options, cmd)
     print(' {0} '.format(msg).center(60, '-'))
     start = timer()
     returncode = caller(cmd, **kwargs)
     print('duration: %s' % timedelta(seconds=timer() - start))
     return returncode
+
+
+def shell_quote(s):
+    return "'" + s.replace("'", "'\"'\"'") + "'"
 
 
 class TimeoutError(Exception):
