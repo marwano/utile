@@ -17,7 +17,7 @@ from utile import (
     safe_import, encrypt, decrypt, shell_quote, flatten, dir_dict, mac_address,
     process_name, get_pid_list, TemporaryDirectory, file_lock,
     requires_commands, resolve, EnforcementError, parse_table, force_print,
-    reformat_query, raises, countdown
+    reformat_query, raises, countdown, random_text
 )
 
 IFCONFIG = b"""\
@@ -146,6 +146,11 @@ class BaseTestCase(TestCase):
                     countdown(2, delay=1)
         expected = 'Countdown: 2\rCountdown: 1\rCountdown: done\n'
         self.assertEqual(mock_stdout.getvalue(), expected)
+
+    def test_random_text(self):
+        a, b = random_text(10), random_text(10)
+        self.assertNotEqual(a, b)
+        self.assertTrue(len(a) == 10 and len(b) == 10)
 
     def test_raises(self):
         self.assertTrue(raises(ValueError, int, 'not a number'))

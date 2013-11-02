@@ -9,6 +9,7 @@ import os
 import os.path
 import sys
 import string
+import random
 from itertools import chain
 from timeit import default_timer as timer
 from functools import wraps
@@ -22,11 +23,15 @@ from textwrap import dedent
 from operator import itemgetter
 from math import log10
 
-
 __version__ = '0.4.dev'
 PY3 = sys.version_info[0] == 3
 string_types = str if PY3 else basestring
 _builtin_print = print
+alpha_numeric = string.ascii_letters + string.digits
+
+
+def random_text(length, characters=alpha_numeric):
+    return ''.join(random.choice(characters) for i in range(length))
 
 
 # print(*objects, sep=' ', end='\n', file=sys.stdout, flush=False)
