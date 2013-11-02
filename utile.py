@@ -36,7 +36,7 @@ def random_text(length, characters=alpha_numeric):
 
 # print(*objects, sep=' ', end='\n', file=sys.stdout, flush=False)
 def print(*args, **kwargs):
-    clean = dict([(k, v) for k, v in kwargs.items() if k != 'flush'])
+    clean = {k: v for k, v in kwargs.items() if k != 'flush'}
     _builtin_print(*args, **clean)
     file = kwargs.get('file', sys.stdout)
     if kwargs.get('flush'):

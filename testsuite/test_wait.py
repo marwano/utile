@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 
+import unittest
 from utile import wait, wait_false, TimeoutError, safe_import
-from testsuite.support import patch, mock, TestCase, unittest
+from testsuite.support import patch, mock, TestCase
 
 
 @unittest.skipUnless(mock, 'mock not installed')

@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 
 from utile import pretty_xml, xml_to_dict, element_to_dict
-from testsuite.support import etree, TestCase, unittest
+from testsuite.support import etree, TestCase
+import unittest
 
 XML_DATA = "<html><body><h1>test1</h1><h2>test2</h2></body></html>"
 XML_PRETTY = """\

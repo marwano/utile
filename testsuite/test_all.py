@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
-from testsuite.support import TEST_DIR, unittest
+from testsuite.support import TEST_DIR
+import unittest
 
 suite = unittest.TestLoader().discover(TEST_DIR)
 

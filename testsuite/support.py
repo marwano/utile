@@ -2,11 +2,7 @@
 from utile import safe_import, PY3
 from os.path import dirname, abspath
 import sys
-
-if sys.version_info < (2, 7):
-    import unittest2 as unittest
-else:
-    import unittest
+import unittest
 
 
 TEST_DIR = dirname(abspath(__file__))

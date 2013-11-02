@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 
+import unittest
 from utile import git_version, safe_import
-from testsuite.support import patch, mock, TestCase, unittest
+from testsuite.support import patch, mock, TestCase
 
 PKG_INFO = """\
 Metadata-Version: 1.1

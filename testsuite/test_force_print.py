@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 
 import sys
+import unittest
 from subprocess import Popen, PIPE
 from utile import force_print
-from testsuite.support import patch, mock, StringIO, TestCase, unittest
+from testsuite.support import patch, mock, StringIO, TestCase
 
 
 @patch('sys.stdout', new_callable=StringIO)

@@ -9,9 +9,9 @@ import os.path
 import sys
 import utile
 import time
+import unittest
 from testsuite.support import (
-    BASE_DIR, patch, mock, Crypto, pep8, StringIO, TestCase, int_to_byte,
-    unittest
+    BASE_DIR, patch, mock, Crypto, pep8, StringIO, TestCase, int_to_byte
 )
 from utile import (
     safe_import, encrypt, decrypt, shell_quote, flatten, dir_dict, mac_address,
