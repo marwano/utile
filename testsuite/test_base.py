@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 
 from subprocess import Popen, PIPE
 from tempfile import NamedTemporaryFile
@@ -13,7 +12,7 @@ from utile import (
     safe_import, encrypt, decrypt, shell_quote, flatten, dir_dict, mac_address,
     process_name, get_pid_list, TemporaryDirectory, file_lock,
     requires_commands, resolve, EnforcementError, parse_table, reformat_query,
-    raises, countdown, random_text
+    raises, countdown, random_text, LazyResolve
 )
 
 IFCONFIG = b"""\
@@ -183,3 +182,7 @@ class BaseTestCase(TestCase):
         query, parameters = reformat_query(query, i, size, name=i.name)
         self.assertEqual(query, 'INSERT INTO items VALUES (?, ?, ?)')
         self.assertEqual(parameters, ('Dummy', 10, 'Small'))
+
+    def test_lazy_resolve(self):
+        lazy = LazyResolve(dict(Popen='subprocess.Popen'))
+        self.assertEqual(lazy.Popen, Popen)

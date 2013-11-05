@@ -14,7 +14,9 @@ clean:
 		testsuite/*.pyc testsuite/__pycache__
 
 coverage:
-	coverage run -m unittest discover
+	coverage run -p -m unittest discover
+	coverage run -p testsuite/force_print.py --end=''
+	coverage combine
 	coverage report
 	coverage html
 
