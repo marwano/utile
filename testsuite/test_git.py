@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import unittest
-from utile import git_version, safe_import
+from utile import git_version
 from testsuite.support import patch, mock, TestCase
 
 PKG_INFO = """\
@@ -20,7 +20,7 @@ class GitTestCase(TestCase):
 
     def test_git_describe(self):
         with patch('utile.which', return_value=['/usr/bin/git']):
-            with patch('subprocess.Popen') as MockPopen:
+            with patch('utile.Popen') as MockPopen:
                 proc = MockPopen.return_value
                 proc.communicate.return_value = (b'v0.2-8-gdbc0d9c\n', b'')
                 self.assertEqual(git_version('0.3.dev'), '0.3.dev8')

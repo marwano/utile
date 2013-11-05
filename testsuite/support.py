@@ -1,12 +1,10 @@
 
 from utile import safe_import, PY3
 from os.path import dirname, abspath
-import sys
 import unittest
 
 
 TEST_DIR = dirname(abspath(__file__))
-BASE_DIR = dirname(TEST_DIR)
 
 
 def read_file(path):
@@ -31,11 +29,13 @@ class TestCase(unittest.TestCase):
 patch = safe_import('mock.patch', fallback_patch)
 mock = safe_import('mock')
 etree = safe_import('lxml.etree')
-pep8 = safe_import('pep8')
 Crypto = safe_import('Crypto')
+yaml = safe_import('yaml')
 
 # load correct StringIO for python 2 and 3
 StringIO = safe_import('StringIO.StringIO') or safe_import('io.StringIO')
 
 # function to convert init to bytes for python 2 and 3
 int_to_byte = (lambda x: bytes([x])) if PY3 else chr
+
+suite = unittest.TestLoader().discover(TEST_DIR)

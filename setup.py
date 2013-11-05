@@ -19,7 +19,7 @@ setup(
     py_modules=['utile'],
     namespace_packages=[],
     include_package_data=True,
-    test_suite='testsuite.test_all.suite',
+    test_suite='testsuite.support.suite',
     classifiers=[
         'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Developers',

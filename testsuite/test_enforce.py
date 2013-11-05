@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-import unittest
 from testsuite.support import TestCase
 from utile import enforce, EnforcementError, enforce_clean_exit
 

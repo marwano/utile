@@ -1,10 +1,9 @@
 #!/usr/bin/env python
 
-import os
 import unittest
 from os.path import exists
 from tempfile import NamedTemporaryFile
-from utile import shell, force_print
+from utile import shell
 from subprocess import CalledProcessError
 from testsuite.support import patch, mock, StringIO, read_file, TestCase
 

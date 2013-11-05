@@ -18,10 +18,15 @@ from hashlib import sha256
 from tempfile import mkdtemp
 from contextlib import contextmanager
 from fcntl import flock, LOCK_EX, LOCK_NB
-from datetime import timedelta, datetime
+from datetime import timedelta
 from textwrap import dedent
 from operator import itemgetter
 from math import log10
+from subprocess import check_call, Popen, PIPE
+from inspect import getargspec
+from argparse import (
+    ArgumentParser, ArgumentDefaultsHelpFormatter, RawDescriptionHelpFormatter
+)
 
 __version__ = '0.4.dev'
 PY3 = sys.version_info[0] == 3
@@ -159,7 +164,6 @@ def parse_table(text, yaml=False):
 
 
 def git_version(version):
-    from subprocess import Popen, PIPE
     if 'dev' not in version:
         return version
     describe = ''
@@ -176,7 +180,6 @@ def git_version(version):
 
 
 def save_args(f):
-    from inspect import getargspec
 
     @wraps(f)
     def wrapper(self, *args, **kwargs):
@@ -211,7 +214,6 @@ def get_pid_list():
 
 
 def mac_address(interface='eth0'):
-    from subprocess import Popen, PIPE
     output, _ = Popen(['ifconfig', interface], stdout=PIPE).communicate()
     return re.search(r'HWaddr ([\w:]+)', output.decode('utf8')).group(1)
 
@@ -288,7 +290,6 @@ def which(cmd):
 
 def shell(cmd=None, msg=None, caller=None, strict=False, verbose=False,
           **kwargs):
-    from subprocess import check_call
     caller = caller or check_call
     msg = msg if msg else cmd
     kwargs.setdefault('shell', True)
@@ -355,27 +356,18 @@ class Arg(object):
         self.kwargs = kwargs
 
 
-def arg_parser(description, *args, **kwargs):
-    from argparse import ArgumentParser
-    kwargs['description'] = description
-    kwargs.setdefault('formatter_class', formatter.UtileArgFormatter)
-    parser = ArgumentParser(**kwargs)
-    for i in args:
-        parser.add_argument(*i.args, **i.kwargs)
-    return parser
-
-
-def _lazy_define_arg_formatter():
-    import argparse
-
-    class UtileArgFormatter(argparse.ArgumentDefaultsHelpFormatter,
-                            argparse.RawDescriptionHelpFormatter):
+class UtileArgFormatter(ArgumentDefaultsHelpFormatter,
+                        RawDescriptionHelpFormatter):
         """
         Help message formatter which adds default values to argument help and
         which retains any formatting in descriptions.
         """
 
-    return UtileArgFormatter
 
-
-formatter = LazyResolve(dict(UtileArgFormatter=_lazy_define_arg_formatter))
+def arg_parser(description, *args, **kwargs):
+    kwargs['description'] = description
+    kwargs.setdefault('formatter_class', UtileArgFormatter)
+    parser = ArgumentParser(**kwargs)
+    for i in args:
+        parser.add_argument(*i.args, **i.kwargs)
+    return parser

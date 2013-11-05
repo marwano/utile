@@ -1,0 +1,22 @@
+test:
+	python -m unittest discover -v
+
+pep8:
+	pep8 --filename=*.py --exclude=.tox,build
+
+pyflakes:
+	pyflakes *.py testsuite
+
+audit: pep8 pyflakes
+
+clean:
+	rm -vfr dist *.egg-info *.pyc __pycache__ build .coverage htmlcov \
+		testsuite/*.pyc testsuite/__pycache__
+
+coverage:
+	coverage run -m unittest discover
+	coverage report
+	coverage html
+
+import_time:
+	python -m timeit -n 1 -r 1 'import utile'

@@ -3,21 +3,17 @@
 from subprocess import Popen, PIPE
 from tempfile import NamedTemporaryFile
 from os.path import exists
-from glob import glob
 import datetime
 import os.path
-import sys
-import utile
-import time
 import unittest
 from testsuite.support import (
-    BASE_DIR, patch, mock, Crypto, pep8, StringIO, TestCase, int_to_byte
+    patch, mock, Crypto, yaml, StringIO, TestCase, int_to_byte
 )
 from utile import (
     safe_import, encrypt, decrypt, shell_quote, flatten, dir_dict, mac_address,
     process_name, get_pid_list, TemporaryDirectory, file_lock,
-    requires_commands, resolve, EnforcementError, parse_table, force_print,
-    reformat_query, raises, countdown, random_text
+    requires_commands, resolve, EnforcementError, parse_table, reformat_query,
+    raises, countdown, random_text
 )
 
 IFCONFIG = b"""\
@@ -88,7 +84,7 @@ class BaseTestCase(TestCase):
 
     @unittest.skipUnless(mock, 'mock not installed')
     def test_mac_address(self):
-        with patch('subprocess.Popen') as MockPopen:
+        with patch('utile.Popen') as MockPopen:
             proc = MockPopen.return_value
             proc.communicate.return_value = (IFCONFIG, b'')
             self.assertEqual(mac_address(), 'd4:be:d9:a0:18:e1')
@@ -129,15 +125,6 @@ class BaseTestCase(TestCase):
         with self.assertRaisesRegex(EnforcementError, 'i_dont_exist'):
             requires_commands('i_dont_exist')
 
-    @unittest.skipUnless(pep8, 'pep8 not installed')
-    @unittest.skipUnless(mock, 'mock not installed')
-    def test_pep8(self):
-        with patch('sys.stdout', new_callable=StringIO) as mock_stdout:
-            style = pep8.StyleGuide(paths=[BASE_DIR], exclude=['.tox'])
-            errors = style.check_files().total_errors
-            msg = '%s pep8 error(s)\n%s' % (errors, mock_stdout.getvalue())
-            self.assertFalse(errors, msg)
-
     @unittest.skipUnless(mock, 'mock not installed')
     def test_countdown(self):
         with patch('utile.timer', side_effect=[0, 0, 0, 1, 1, 2, 2]):
@@ -158,6 +145,7 @@ class BaseTestCase(TestCase):
         with self.assertRaisesRegex(ValueError, 'invalid literal'):
             self.assertTrue(raises(ImportError, int, 'not a number'))
 
+    @unittest.skipUnless(yaml, 'PyYAML not installed')
     def test_parse_table(self):
         input = """
             ==========  ==========  ================

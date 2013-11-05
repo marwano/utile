@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import unittest
-from utile import wait, wait_false, TimeoutError, safe_import
+from utile import wait, wait_false, TimeoutError
 from testsuite.support import patch, mock, TestCase
 
 
