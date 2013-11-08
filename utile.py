@@ -272,6 +272,11 @@ def enforce(rule, msg, exception=EnforcementError):
         raise exception(msg)
 
 
+def enforce_false(rule, msg, exception=EnforcementError):
+    if rule:
+        raise exception(msg)
+
+
 def enforce_clean_exit(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
