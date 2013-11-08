@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 
 from testsuite.support import TestCase
 from utile import save_args

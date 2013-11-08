@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 
 from utile import Arg, arg_parser
 from testsuite.support import StringIO, TestCase

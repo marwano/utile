@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 
 import unittest
 from utile import wait, wait_false, TimeoutError

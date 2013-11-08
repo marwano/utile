@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 
 from utile import pretty_xml, xml_to_dict, element_to_dict
 from testsuite.support import etree, TestCase
