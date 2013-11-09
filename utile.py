@@ -372,7 +372,14 @@ class UtileArgFormatter(ArgumentDefaultsHelpFormatter,
 def arg_parser(description, *args, **kwargs):
     kwargs['description'] = description
     kwargs.setdefault('formatter_class', UtileArgFormatter)
+    autocomplete = kwargs.pop('autocomplete', True)
     parser = ArgumentParser(**kwargs)
     for i in args:
-        parser.add_argument(*i.args, **i.kwargs)
+        completer = i.kwargs.pop('completer', None)
+        action = parser.add_argument(*i.args, **i.kwargs)
+        if completer:
+            action.completer = completer
+    argcomplete = safe_import('argcomplete')
+    if autocomplete and argcomplete:
+        argcomplete.autocomplete(parser)
     return parser
