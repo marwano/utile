@@ -41,11 +41,10 @@ def random_text(length, characters=alpha_numeric):
 
 # print(*objects, sep=' ', end='\n', file=sys.stdout, flush=False)
 def print(*args, **kwargs):
-    clean = {k: v for k, v in kwargs.items() if k != 'flush'}
-    _builtin_print(*args, **clean)
-    file = kwargs.get('file', sys.stdout)
-    if kwargs.get('flush'):
-        file.flush()
+    flush = kwargs.pop('flush', False)
+    _builtin_print(*args, **kwargs)
+    if flush:
+        kwargs.get('file', sys.stdout).flush()
 
 
 def force_print(*args, **kwargs):
