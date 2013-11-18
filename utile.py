@@ -17,7 +17,6 @@ from shutil import rmtree
 from hashlib import sha256
 from tempfile import mkdtemp
 from contextlib import contextmanager
-from fcntl import flock, LOCK_EX, LOCK_NB
 from datetime import timedelta
 from textwrap import dedent
 from operator import itemgetter
@@ -228,6 +227,7 @@ def TemporaryDirectory(suffix='', prefix='tmp', dir=None):
 
 @contextmanager
 def file_lock(path):
+    from fcntl import flock, LOCK_EX, LOCK_NB
     try:
         f = open(path, 'w')
         flock(f, LOCK_EX | LOCK_NB)
