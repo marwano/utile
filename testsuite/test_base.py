@@ -1,4 +1,5 @@
 
+import os
 from subprocess import Popen, PIPE
 from tempfile import NamedTemporaryFile
 from os.path import exists
@@ -10,9 +11,9 @@ from testsuite.support import (
 )
 from utile import (
     safe_import, encrypt, decrypt, shell_quote, flatten, dir_dict, mac_address,
-    process_name, get_pid_list, TemporaryDirectory, file_lock,
+    process_name, process_info, get_pid_list, TemporaryDirectory, file_lock,
     requires_commands, resolve, EnforcementError, parse_table, reformat_query,
-    raises, countdown, random_text, LazyResolve
+    raises, countdown, random_text, LazyResolve, swap_save
 )
 
 IFCONFIG = b"""\
@@ -92,6 +93,18 @@ class BaseTestCase(TestCase):
         self.assertEqual(process_name(1), ['/sbin/init'])
         self.assertRaises(IOError, process_name, -1)
         self.assertEqual(process_name(-1, ignore_errors=True), [])
+
+    def test_process_info(self):
+        info = process_info(1)
+        self.assertEqual(info['Pid'], 1)
+        self.assertEqual(info['PPid'], 0)
+        self.assertRaises(IOError, process_info, -1)
+        self.assertEqual(process_info(-1, ignore_errors=True), {})
+        info = process_info()
+        self.assertEqual(info['Pid'], os.getpid())
+        self.assertEqual(info['PPid'], os.getppid())
+        self.assertIsInstance(info['VmSize'], int)
+        self.assertIsInstance(info['Name'], str)
 
     def test_get_pid_list(self):
         self.assertIn(os.getpid(), get_pid_list())
@@ -186,3 +199,13 @@ class BaseTestCase(TestCase):
     def test_lazy_resolve(self):
         lazy = LazyResolve(dict(Popen='subprocess.Popen'))
         self.assertEqual(lazy.Popen, Popen)
+
+    def test_swap_save(self):
+        with NamedTemporaryFile(prefix='swap_save_') as f:
+            swap_save(f.name, 'test data')
+            self.assertEqual(open(f.name).read(), 'test data')
+            os.remove(f.name)
+            swap_save(f.name, 'test data')
+            self.assertEqual(open(f.name).read(), 'test data')
+            swap_save(f.name, ['test', ' data'])
+            self.assertEqual(open(f.name).read(), 'test data')

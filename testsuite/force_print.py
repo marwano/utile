@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 
 import sys
 from os.path import dirname, abspath
@@ -19,6 +20,7 @@ def main():
         Arg('--end', default='\n')
     ).parse_args()
     call_force_print(args.text, args.end)
+
 
 if __name__ == '__main__':
     main()

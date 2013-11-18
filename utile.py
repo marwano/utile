@@ -15,7 +15,7 @@ from timeit import default_timer as timer
 from functools import wraps
 from shutil import rmtree
 from hashlib import sha256
-from tempfile import mkdtemp
+from tempfile import mkdtemp, NamedTemporaryFile
 from contextlib import contextmanager
 from datetime import timedelta
 from textwrap import dedent
@@ -195,16 +195,38 @@ def flatten(data):
     return list(chain.from_iterable(data))
 
 
-def process_name(pid=None, ignore_errors=False):
+def _read_proc_file(path, pid, ignore_errors):
     pid = pid or os.getpid()
     try:
-        with open('/proc/%s/cmdline' % pid) as f:
-            return f.read().strip('\x00').split('\x00')
+        with open(path.format(pid=pid)) as f:
+            return f.read()
     except IOError:
-        if ignore_errors:
-            return []
-        else:
+        if not ignore_errors:
             raise
+
+
+def process_name(pid=None, ignore_errors=False):
+    data = _read_proc_file('/proc/{pid}/cmdline', pid, ignore_errors)
+    data = data.strip('\x00').split('\x00') if data else []
+    return data
+
+
+def _format_proc_info(key, val):
+    val = val.strip()
+    if key.startswith('Vm'):
+        return int(val.replace(' kB', '')) * 1024
+    if key in ['Tgid', 'Pid', 'PPid', 'TracerPid', 'FDSize', 'Threads']:
+        return int(val)
+    return val
+
+
+def process_info(pid=None, ignore_errors=False):
+    data = _read_proc_file('/proc/{pid}/status', pid, ignore_errors)
+    if not data:
+        return {}
+    data = dict(i.split(':', 1) for i in data.splitlines())
+    data = {k: _format_proc_info(k, v) for k, v in data.items()}
+    return data
 
 
 def get_pid_list():
@@ -292,6 +314,13 @@ def which(cmd):
     return [i for i in cmd_paths if os.path.exists(i)]
 
 
+@contextmanager
+def timed(msg='duration'):
+    start = timer()
+    yield
+    print('%s: %s' % (msg, timedelta(seconds=timer() - start)))
+
+
 def shell(cmd=None, msg=None, caller=None, strict=False, verbose=False,
           **kwargs):
     caller = caller or check_call
@@ -311,10 +340,8 @@ def shell(cmd=None, msg=None, caller=None, strict=False, verbose=False,
     if set_options:
         cmd = 'set -{}\n{}'.format(set_options, cmd)
     print(' {0} '.format(msg).center(60, '-'))
-    start = timer()
-    returncode = caller(cmd, **kwargs)
-    print('duration: %s' % timedelta(seconds=timer() - start))
-    return returncode
+    with timed():
+        return caller(cmd, **kwargs)
 
 
 def shell_quote(s):
@@ -382,3 +409,13 @@ def arg_parser(description, *args, **kwargs):
     if autocomplete and argcomplete:
         argcomplete.autocomplete(parser)
     return parser
+
+
+def swap_save(path, data):
+    swap = NamedTemporaryFile(prefix='swap_save_', suffix='.swap',
+                              delete=False, dir=os.path.dirname(path))
+    data = [data] if isinstance(data, string_types) else data
+    with open(swap.name, 'w') as f:
+        for i in data:
+            f.write(i)
+    os.rename(swap.name, path)
