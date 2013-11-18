@@ -233,11 +233,6 @@ def get_pid_list():
     return sorted(int(i) for i in os.listdir('/proc') if i.isdigit())
 
 
-def mac_address(interface='eth0'):
-    output, _ = Popen(['ifconfig', interface], stdout=PIPE).communicate()
-    return re.search(r'HWaddr ([\w:]+)', output.decode('utf8')).group(1)
-
-
 @contextmanager
 def TemporaryDirectory(suffix='', prefix='tmp', dir=None):
     path = mkdtemp(suffix, prefix, dir)

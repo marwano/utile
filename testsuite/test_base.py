@@ -10,17 +10,11 @@ from testsuite.support import (
     patch, mock, Crypto, yaml, StringIO, TestCase, int_to_byte
 )
 from utile import (
-    safe_import, encrypt, decrypt, shell_quote, flatten, dir_dict, mac_address,
+    safe_import, encrypt, decrypt, shell_quote, flatten, dir_dict,
     process_name, process_info, get_pid_list, TemporaryDirectory, file_lock,
     requires_commands, resolve, EnforcementError, parse_table, reformat_query,
     raises, countdown, random_text, LazyResolve, swap_save
 )
-
-IFCONFIG = b"""\
-eth0      Link encap:Ethernet  HWaddr d4:be:d9:a0:18:e1
-          inet addr:10.0.0.13  Bcast:10.0.0.255  Mask:255.255.255.0
-          inet6 addr: fe80::d6be:d9ff:fea2:f8e1/64 Scope:Link
-"""
 
 
 class BaseTestCase(TestCase):
@@ -81,13 +75,6 @@ class BaseTestCase(TestCase):
         self.assertFalse('_private' in data)
         data = dir_dict(Dummy(), only_public=False)
         self.assertTrue('_private' in data)
-
-    @unittest.skipUnless(mock, 'mock not installed')
-    def test_mac_address(self):
-        with patch('utile.Popen') as MockPopen:
-            proc = MockPopen.return_value
-            proc.communicate.return_value = (IFCONFIG, b'')
-            self.assertEqual(mac_address(), 'd4:be:d9:a0:18:e1')
 
     def test_process_name(self):
         self.assertEqual(process_name(1), ['/sbin/init'])
