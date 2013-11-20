@@ -198,6 +198,7 @@ class BaseTestCase(TestCase):
             swap_save(f.name, ['test', ' data'])
             self.assertEqual(open(f.name).read(), 'test data')
 
+    @unittest.skipUnless(mock, 'mock not installed')
     def test_throttle_filter(self):
         with TemporaryDirectory() as tmp:
             filter = ThrottleFilter(tmp, 3)
