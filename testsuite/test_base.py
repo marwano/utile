@@ -6,14 +6,15 @@ from os.path import exists
 import datetime
 import os.path
 import unittest
+from glob import glob
 from testsuite.support import (
     patch, mock, Crypto, yaml, StringIO, TestCase, int_to_byte
 )
 from utile import (
-    safe_import, encrypt, decrypt, shell_quote, flatten, dir_dict,
+    safe_import, encrypt, decrypt, shell_quote, flatten, dir_dict, touch,
     process_name, process_info, get_pid_list, TemporaryDirectory, file_lock,
     requires_commands, resolve, EnforcementError, parse_table, reformat_query,
-    raises, countdown, random_text, LazyResolve, swap_save
+    raises, countdown, random_text, LazyResolve, swap_save, ThrottleFilter
 )
 
 
@@ -196,3 +197,17 @@ class BaseTestCase(TestCase):
             self.assertEqual(open(f.name).read(), 'test data')
             swap_save(f.name, ['test', ' data'])
             self.assertEqual(open(f.name).read(), 'test data')
+
+    def test_throttle_filter(self):
+        with TemporaryDirectory() as tmp:
+            filter = ThrottleFilter(tmp, 3)
+            actual = [filter.filter(None) for i in range(5)]
+            self.assertEqual(actual, [1, 1, 1, 0, 0])
+            os.remove(glob(tmp + os.sep + '*')[0])
+            touch(tmp + os.sep + 'throttle.2000-01-01_00.000005.filter')
+            self.assertEqual(filter.filter(None), 1)
+            touch(tmp + os.sep + 'throttle.dummy.filter')
+            with self.assertRaisesRegex(OSError, 'More then one filter found'):
+                filter.filter(None)
+            with patch('logging.raiseExceptions', 0):
+                filter.filter(None)

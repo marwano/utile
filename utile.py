@@ -10,6 +10,7 @@ import os.path
 import sys
 import string
 import random
+import logging
 from itertools import chain
 from timeit import default_timer as timer
 from functools import wraps
@@ -17,7 +18,7 @@ from shutil import rmtree
 from hashlib import sha256
 from tempfile import mkdtemp, NamedTemporaryFile
 from contextlib import contextmanager
-from datetime import timedelta
+from datetime import datetime, timedelta
 from textwrap import dedent
 from operator import itemgetter
 from math import log10
@@ -414,3 +415,45 @@ def swap_save(path, data):
         for i in data:
             f.write(i)
     os.rename(swap.name, path)
+
+
+def touch(path, times=None):
+    with open(path, 'a'):
+        os.utime(path, times)
+
+
+class ThrottleFilter(object):
+    PERIOD_FORMAT = dict(hour='%Y-%m-%d_%H', day='%Y-%m-%d')
+
+    @save_args
+    def __init__(self, dir, limit, period='hour', prefix='throttle.'):
+        base = prefix + '{stamp}.{count:06d}.filter'
+        self.filename = os.path.join(self.dir, base)
+
+    def check(self):
+        new_stamp = datetime.now().strftime(self.PERIOD_FORMAT[self.period])
+        files = [i for i in os.listdir(self.dir) if i.startswith(self.prefix)]
+        if not files:
+            touch(self.filename.format(stamp=new_stamp, count=1))
+            return 1
+        if len(files) > 1:
+            raise OSError('More then one filter found %r' % files)
+        old_file = os.path.join(self.dir, files[0])
+        old_stamp, old_count = files[0].split('.')[1:3]
+        old_count = int(old_count)
+        if new_stamp != old_stamp:
+            allow, count = 1, 1
+        elif old_count < self.limit:
+            allow, count = 1, old_count + 1
+        else:
+            allow, count = 0, old_count + 1
+        os.rename(old_file, self.filename.format(stamp=new_stamp, count=count))
+        return allow
+
+    def filter(self, record):
+        try:
+            return self.check()
+        except OSError:
+            if logging.raiseExceptions:
+                raise
+            return 0
