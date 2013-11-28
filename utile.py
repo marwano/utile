@@ -6,12 +6,12 @@ from __future__ import print_function
 import time
 import re
 import os
+import errno
 import os.path
 import sys
 import string
 import random
-import logging
-from itertools import chain
+import itertools
 from timeit import default_timer as timer
 from functools import wraps
 from shutil import rmtree
@@ -31,6 +31,7 @@ from argparse import (
 __version__ = '0.4.dev'
 PY3 = sys.version_info[0] == 3
 string_types = str if PY3 else basestring
+get_ident = __import__('_thread' if PY3 else 'thread').get_ident
 _builtin_print = print
 alpha_numeric = string.ascii_letters + string.digits
 
@@ -186,14 +187,14 @@ def save_args(f):
         defaults = zip(reversed(names), reversed(getargspec(f).defaults))
         positional = zip(names, args)
         keyword = kwargs.items()
-        for k, v in chain(defaults, positional, keyword):
+        for k, v in itertools.chain(defaults, positional, keyword):
             setattr(self, k, v)
         return f(self, *args, **kwargs)
     return wrapper
 
 
 def flatten(data):
-    return list(chain.from_iterable(data))
+    return list(itertools.chain.from_iterable(data))
 
 
 def _read_proc_file(path, pid, ignore_errors):
@@ -422,38 +423,39 @@ def touch(path, times=None):
         os.utime(path, times)
 
 
+def safe_mkdir(path, mode=0o777):
+    try:
+        os.mkdir(path)
+        os.chmod(path, mode)
+    except OSError as e:
+        if e.errno != errno.EEXIST:
+            raise
+
+
 class ThrottleFilter(object):
-    PERIOD_FORMAT = dict(hour='%Y-%m-%d_%H', day='%Y-%m-%d')
+    PERIOD_FORMAT = dict(hour='stamp_%Y-%m-%d_%H', day='stamp_%Y-%m-%d')
 
     @save_args
-    def __init__(self, dir, limit, period='hour', prefix='throttle.'):
-        base = prefix + '{stamp}.{count:06d}.filter'
-        self.filename = os.path.join(self.dir, base)
+    def __init__(self, dir, limit, period='hour'):
+        self.pformat = self.PERIOD_FORMAT[self.period]
 
-    def check(self):
-        new_stamp = datetime.now().strftime(self.PERIOD_FORMAT[self.period])
-        files = [i for i in os.listdir(self.dir) if i.startswith(self.prefix)]
-        if not files:
-            touch(self.filename.format(stamp=new_stamp, count=1))
-            return 1
-        if len(files) > 1:
-            raise OSError('More then one filter found %r' % files)
-        old_file = os.path.join(self.dir, files[0])
-        old_stamp, old_count = files[0].split('.')[1:3]
-        old_count = int(old_count)
-        if new_stamp != old_stamp:
-            allow, count = 1, 1
-        elif old_count < self.limit:
-            allow, count = 1, old_count + 1
-        else:
-            allow, count = 0, old_count + 1
-        os.rename(old_file, self.filename.format(stamp=new_stamp, count=count))
-        return allow
+    def cleanup(self, latest):
+        for i in os.listdir(self.dir):
+            if i != os.path.basename(latest):
+                rmtree(os.path.join(self.dir, i), ignore_errors=True)
 
     def filter(self, record):
-        try:
-            return self.check()
-        except OSError:
-            if logging.raiseExceptions:
-                raise
-            return 0
+        id = 'pid{}-thread{}'.format(os.getpid(), get_ident())
+        path = os.path.join(self.dir, datetime.now().strftime(self.pformat))
+        safe_mkdir(path)
+        self.cleanup(path)
+        files = os.listdir(path)
+        id_file = ''.join(i for i in files if i.startswith(id + '-count'))
+        if id_file:
+            count = int(id_file.split('count')[1]) + 1
+            new = '{}-count{}'.format(id, count)
+            os.rename(os.path.join(path, id_file), os.path.join(path, new))
+        else:
+            touch(os.path.join(path, '{}-count{}'.format(id, 1)))
+        total = sum(int(i.split('count')[1]) for i in files) + 1
+        return 1 if total <= self.limit else 0

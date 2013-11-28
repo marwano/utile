@@ -2,19 +2,19 @@
 import os
 from subprocess import Popen, PIPE
 from tempfile import NamedTemporaryFile
-from os.path import exists
+from os.path import exists, join
 import datetime
 import os.path
 import unittest
-from glob import glob
 from testsuite.support import (
     patch, mock, Crypto, yaml, StringIO, TestCase, int_to_byte
 )
 from utile import (
-    safe_import, encrypt, decrypt, shell_quote, flatten, dir_dict, touch,
+    safe_import, encrypt, decrypt, shell_quote, flatten, dir_dict,
     process_name, process_info, get_pid_list, TemporaryDirectory, file_lock,
     requires_commands, resolve, EnforcementError, parse_table, reformat_query,
-    raises, countdown, random_text, LazyResolve, swap_save, ThrottleFilter
+    raises, countdown, random_text, LazyResolve, swap_save, touch, safe_mkdir,
+    ThrottleFilter
 )
 
 
@@ -198,17 +198,27 @@ class BaseTestCase(TestCase):
             swap_save(f.name, ['test', ' data'])
             self.assertEqual(open(f.name).read(), 'test data')
 
+    def test_touch(self):
+        with TemporaryDirectory() as tmp:
+            path = join(tmp, 'test.txt')
+            touch(path)
+            self.assertTrue(exists(path))
+
+    def test_safe_mkdir(self):
+        with TemporaryDirectory() as tmp:
+            path = join(tmp, 'test')
+            safe_mkdir(path)
+            self.assertTrue(exists(path))
+            safe_mkdir(path)
+            self.assertRaises(OSError, safe_mkdir, join(tmp, 'a', 'b'))
+
     @unittest.skipUnless(mock, 'mock not installed')
     def test_throttle_filter(self):
         with TemporaryDirectory() as tmp:
             filter = ThrottleFilter(tmp, 3)
             actual = [filter.filter(None) for i in range(5)]
             self.assertEqual(actual, [1, 1, 1, 0, 0])
-            os.remove(glob(tmp + os.sep + '*')[0])
-            touch(tmp + os.sep + 'throttle.2000-01-01_00.000005.filter')
-            self.assertEqual(filter.filter(None), 1)
-            touch(tmp + os.sep + 'throttle.dummy.filter')
-            with self.assertRaisesRegex(OSError, 'More then one filter found'):
-                filter.filter(None)
-            with patch('logging.raiseExceptions', 0):
-                filter.filter(None)
+            old_path = join(tmp, 'stamp_2000-01-01_00')
+            os.mkdir(old_path)
+            filter.filter(None)
+            self.assertFalse(exists(old_path))
