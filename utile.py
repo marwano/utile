@@ -408,13 +408,31 @@ def arg_parser(description, *args, **kwargs):
     return parser
 
 
-def swap_save(path, data):
+def parse_env(parser, prefix, env=None, args=None):
+    env = os.environ if env is None else env
+    args = sys.argv[1:] if args is None else args
+    prefix = prefix.upper() + '_'
+    env_args = []
+    for k, v in env.items():
+        if k.startswith(prefix):
+            k = '--' + k.partition(prefix)[2].lower().replace('_', '-')
+            env_args.extend([k, v])
+    return parser.parse_args(env_args + args)
+
+
+def write_file(path, data, mode='w'):
+    with open(path, mode) as f:
+        if isinstance(data, string_types):
+            f.write(data)
+        else:
+            f.writelines(data)
+
+
+def swap_save(path, data, mode='w'):
+    dir = os.path.dirname(path)
     swap = NamedTemporaryFile(prefix='swap_save_', suffix='.swap',
-                              delete=False, dir=os.path.dirname(path))
-    data = [data] if isinstance(data, string_types) else data
-    with open(swap.name, 'w') as f:
-        for i in data:
-            f.write(i)
+                              delete=False, dir=dir)
+    write_file(swap.name, data, mode)
     os.rename(swap.name, path)
 
 
@@ -437,6 +455,7 @@ class ThrottleFilter(object):
 
     @save_args
     def __init__(self, dir, limit, period='hour'):
+        self.dir = self.dir
         self.pformat = self.PERIOD_FORMAT[self.period]
 
     def cleanup(self, latest):

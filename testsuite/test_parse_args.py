@@ -1,6 +1,6 @@
 
-from utile import Arg, arg_parser
-from testsuite.support import StringIO, TestCase, mock, patch
+from utile import Arg, arg_parser, parse_env
+from testsuite.support import TestCase, mock, patch, StringIO
 import unittest
 import re
 
@@ -26,13 +26,9 @@ Examples:
 """
 
 
-def normalize(text):
-    return [i.strip() for i in text.strip().splitlines()]
-
-
 class ParseArgsTestCase(TestCase):
-    def get_parser(self):
-        return arg_parser(
+    def setUp(self):
+        self.parser = arg_parser(
             'greet someone',
             Arg('--greeting', default='hello', help='how to greet'),
             Arg('--name', default='world', help='who to greet'),
@@ -40,20 +36,20 @@ class ParseArgsTestCase(TestCase):
         )
 
     def test_defaults(self):
-        actual = vars(self.get_parser().parse_args([]))
+        actual = vars(self.parser.parse_args([]))
         expected = dict(greeting='hello', name='world')
         self.assertEqual(actual, expected)
 
     def test_arguments(self):
-        actual = vars(self.get_parser().parse_args(['--name=jack']))
+        actual = vars(self.parser.parse_args(['--name=jack']))
         expected = dict(greeting='hello', name='jack')
         self.assertEqual(actual, expected)
 
     def test_help(self):
         output = StringIO()
-        self.get_parser().print_help(file=output)
+        self.parser.print_help(file=output)
         cleanup = re.sub(r'usage:[^\[]*\[', 'usage:  [', output.getvalue())
-        self.assertEqual(normalize(cleanup), normalize(HELP))
+        self.assertEqual(cleanup, HELP)
 
     def test_completer(self):
         completer = lambda x: x
@@ -75,3 +71,14 @@ class ParseArgsTestCase(TestCase):
         with patch('utile.safe_import', return_value=argcomplete):
             arg_parser('greet someone', autocomplete=False)
             self.assertEqual(argcomplete.mock_calls, [])
+
+    def test_parse_env_basic(self):
+        env = {'GREET_NAME': 'alice'}
+        actual = vars(parse_env(self.parser, 'greet', env, []))
+        self.assertEqual(actual, dict(greeting='hello', name='alice'))
+
+    def test_parse_env_with_args(self):
+        env = {'GREET_NAME': 'alice', 'RANDOM_VAR': '1'}
+        args = ['--greeting', 'hi', '--name', 'bob']
+        actual = vars(parse_env(self.parser, 'greet', env, args))
+        self.assertEqual(actual, dict(greeting='hi', name='bob'))

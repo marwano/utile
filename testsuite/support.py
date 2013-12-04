@@ -2,7 +2,8 @@
 from utile import safe_import, PY3
 from os.path import dirname, abspath
 import unittest
-
+StringIO = __import__('io' if PY3 else 'StringIO').StringIO
+Queue = __import__('queue' if PY3 else 'Queue').Queue
 
 TEST_DIR = dirname(abspath(__file__))
 
@@ -32,8 +33,6 @@ etree = safe_import('lxml.etree')
 Crypto = safe_import('Crypto')
 yaml = safe_import('yaml')
 
-# load correct StringIO for python 2 and 3
-StringIO = safe_import('StringIO.StringIO') or safe_import('io.StringIO')
 
 # function to convert init to bytes for python 2 and 3
 int_to_byte = (lambda x: bytes([x])) if PY3 else chr

@@ -4,7 +4,7 @@ from os.path import exists
 from tempfile import NamedTemporaryFile
 from utile import shell
 from subprocess import CalledProcessError
-from testsuite.support import patch, mock, StringIO, read_file, TestCase
+from testsuite.support import patch, mock, read_file, TestCase, StringIO
 
 
 @unittest.skipUnless(mock, 'mock not installed')

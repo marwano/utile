@@ -7,14 +7,14 @@ import datetime
 import os.path
 import unittest
 from testsuite.support import (
-    patch, mock, Crypto, yaml, StringIO, TestCase, int_to_byte
+    patch, mock, Crypto, yaml, TestCase, int_to_byte, StringIO
 )
 from utile import (
     safe_import, encrypt, decrypt, shell_quote, flatten, dir_dict,
     process_name, process_info, get_pid_list, TemporaryDirectory, file_lock,
     requires_commands, resolve, EnforcementError, parse_table, reformat_query,
     raises, countdown, random_text, LazyResolve, swap_save, touch, safe_mkdir,
-    ThrottleFilter
+    ThrottleFilter, write_file
 )
 
 
@@ -203,6 +203,13 @@ class BaseTestCase(TestCase):
             path = join(tmp, 'test.txt')
             touch(path)
             self.assertTrue(exists(path))
+
+    def test_write_file(self):
+        with TemporaryDirectory() as tmp:
+            write_file(join(tmp, 'test1.txt'), 'test data')
+            write_file(join(tmp, 'test2.txt'), ['test', ' ', 'data'])
+            self.assertEqual(open(join(tmp, 'test1.txt')).read(), 'test data')
+            self.assertEqual(open(join(tmp, 'test2.txt')).read(), 'test data')
 
     def test_safe_mkdir(self):
         with TemporaryDirectory() as tmp:

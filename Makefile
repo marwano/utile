@@ -1,6 +1,9 @@
 test:
 	python -m unittest discover -v
 
+stress:
+	python -m unittest discover -v -p 'stress_*.py'
+
 pep8:
 	pep8 --filename=*.py --exclude=.tox,build
 
