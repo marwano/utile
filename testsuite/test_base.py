@@ -1,5 +1,6 @@
 
 import os
+import platform
 from subprocess import Popen, PIPE
 from tempfile import NamedTemporaryFile
 from os.path import exists, join
@@ -77,11 +78,13 @@ class BaseTestCase(TestCase):
         data = dir_dict(Dummy(), only_public=False)
         self.assertTrue('_private' in data)
 
+    @unittest.skipIf(platform.system() == 'Windows', 'Windows not supported')
     def test_process_name(self):
         self.assertEqual(process_name(1), ['/sbin/init'])
         self.assertRaises(IOError, process_name, -1)
         self.assertEqual(process_name(-1, ignore_errors=True), [])
 
+    @unittest.skipIf(platform.system() == 'Windows', 'Windows not supported')
     def test_process_info(self):
         info = process_info(1)
         self.assertEqual(info['Pid'], 1)
@@ -94,6 +97,7 @@ class BaseTestCase(TestCase):
         self.assertIsInstance(info['VmSize'], int)
         self.assertIsInstance(info['Name'], str)
 
+    @unittest.skipIf(platform.system() == 'Windows', 'Windows not supported')
     def test_get_pid_list(self):
         self.assertIn(os.getpid(), get_pid_list())
 
@@ -109,6 +113,7 @@ class BaseTestCase(TestCase):
             self.assertEqual(input, output)
         self.assertFalse(exists(tmp))
 
+    @unittest.skipIf(platform.system() == 'Windows', 'Windows not supported')
     def test_file_lock(self):
         with NamedTemporaryFile() as f:
             tmp = f.name
@@ -121,7 +126,8 @@ class BaseTestCase(TestCase):
         self.assertFalse(exists(tmp))
 
     def test_requires_commands(self):
-        requires_commands('python')
+        cmd = 'cmd.exe' if platform.system() == 'Windows' else 'python'
+        requires_commands(cmd)
         with self.assertRaisesRegex(EnforcementError, 'i_dont_exist'):
             requires_commands('i_dont_exist')
 
@@ -188,6 +194,7 @@ class BaseTestCase(TestCase):
         lazy = LazyResolve(dict(Popen='subprocess.Popen'))
         self.assertEqual(lazy.Popen, Popen)
 
+    @unittest.skipIf(platform.system() == 'Windows', 'Windows not supported')
     def test_swap_save(self):
         with NamedTemporaryFile(prefix='swap_save_') as f:
             swap_save(f.name, 'test data')
