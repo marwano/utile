@@ -432,6 +432,7 @@ def swap_save(path, data, mode='w'):
     dir = os.path.dirname(path)
     swap = NamedTemporaryFile(prefix='swap_save_', suffix='.swap',
                               delete=False, dir=dir)
+    os.chmod(swap.name, 0o664)
     write_file(swap.name, data, mode)
     os.rename(swap.name, path)
 
