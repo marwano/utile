@@ -3,6 +3,7 @@
 # license: BSD, see LICENSE for more details.
 
 from __future__ import print_function
+import hashlib
 import time
 import re
 import os
@@ -479,3 +480,32 @@ class ThrottleFilter(object):
             touch(os.path.join(path, '{}-count{}'.format(id, 1)))
         total = sum(int(i.split('count')[1]) for i in files) + 1
         return 1 if total <= self.limit else 0
+
+
+def buffered_read(reader, callback, buffer_size=10*1024):
+    while True:
+        data = reader(buffer_size)
+        if not data:
+            break
+        callback(data)
+
+
+def hash_file(path, algorithm='md5'):
+    pathlib = requires_package('pathlib')
+    path = pathlib.Path(path)
+    hash = hashlib.new(algorithm)
+    with path.open('rb') as f:
+        buffered_read(f.read, hash.update)
+    return hash
+
+
+def hash_dir(path, algorithm='md5'):
+    pathlib = requires_package('pathlib')
+    path = pathlib.Path(path)
+    files = [i for i in sorted(path.glob('**/*')) if i.is_file()]
+    hashes = ''
+    for i in files:
+        hash = hash_file(i, algorithm).hexdigest()
+        file = i.relative_to(path)
+        hashes += '{hash}  ./{file}\n'.format(hash=hash, file=file)
+    return hashes
