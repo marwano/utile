@@ -509,3 +509,16 @@ def hash_dir(path, algorithm='md5'):
         file = i.relative_to(path)
         hashes += '{hash}  ./{file}\n'.format(hash=hash, file=file)
     return hashes
+
+
+def stamp_dir(path, format='{file} {size} {mtime}\n'):
+    pathlib = requires_package('pathlib')
+    path = pathlib.Path(path)
+    files = [i for i in sorted(path.glob('**/*')) if i.is_file()]
+    stamp = ''
+    for file in files:
+        stat = file.stat()
+        size = stat.st_size
+        mtime = datetime.fromtimestamp(stat.st_mtime)
+        stamp += format.format(file=file, stat=stat, mtime=mtime, size=size)
+    return stamp
